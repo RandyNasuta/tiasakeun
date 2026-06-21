@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Tiasakeun</string>
+    <string name="example_activity_text">Minum Air 2 L</string>
+    <string name="example_activity_progress">1500 ml / 2000 ml</string>
+    <string name="add_new_activity">Add new activity</string>
 </resources>

@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="window_background">#E6ECF2</color>
+    <color name="surface_card">#F8FAFC</color>
+    <color name="primary_text">#334E68</color>
+    <color name="accent_blue">#486581</color>
 </resources>
