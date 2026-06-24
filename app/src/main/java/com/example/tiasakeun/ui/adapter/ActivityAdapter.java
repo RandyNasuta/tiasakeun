@@ -33,7 +33,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
     public void onBindViewHolder(@NonNull ActivityAdapter.ActivityViewHolder holder, int position) {
         Activity activity = activityList.get(position);
         holder.tVActivityTitle.setText(activity.getTitle());
-        holder.tVActivityProgress.setText(R.string.example_activity_progress);
+        holder.tVActivityProgress.setText(activity.getCurrentValue() + " / " + activity.getTargetValue());
         holder.iVActivityMark.setImageResource(activity.getImageResourceId());
     }
 

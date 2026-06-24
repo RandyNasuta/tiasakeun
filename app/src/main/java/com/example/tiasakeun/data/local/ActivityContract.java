@@ -15,5 +15,6 @@ public class ActivityContract {
         public static final String COLUMN_CURRENT_VALUE = "current_value";
         public static final String COLUMN_TARGET_VALUE = "target_value";
         public static final String COLUMN_NOTIFICATION = "notification";
+        public static final String COLUMN_IMAGE_RESOURCE = "image_resource";
     }
 }

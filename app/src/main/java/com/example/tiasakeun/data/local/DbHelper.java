@@ -48,6 +48,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     ActivityEntry.COLUMN_CURRENT_VALUE + " INTEGER NOT NULL, " +
                     ActivityEntry.COLUMN_TARGET_VALUE + " INTEGER NOT NULL, " +
                     ActivityEntry.COLUMN_NOTIFICATION + " INTEGER NOT NULL, " +
+                    ActivityEntry.COLUMN_IMAGE_RESOURCE + " INTEGER NOT NULL, " +
                     "FOREIGN KEY (" + ActivityEntry.COLUMN_USER_ID + ") REFERENCES " +
                     UserEntry.TABLE_NAME + "(" + UserEntry._ID + "), " +
                     "FOREIGN KEY (" + ActivityEntry.COLUMN_TYPE_ID + ") REFERENCES " +
@@ -112,13 +113,17 @@ public class DbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(SQL_CREATE_NOTIFICATIONS);
 
         //Data master
-        sqLiteDatabase.execSQL("INSERT INTO " + TypeEntry.TABLE_NAME + " (" + TypeEntry.COLUMN_CATEGORY + ", " + TypeEntry.COLUMN_UNIT_NAME + ") VALUES ('Waktu', 'Menit')");
-        sqLiteDatabase.execSQL("INSERT INTO " + TypeEntry.TABLE_NAME + " (" + TypeEntry.COLUMN_CATEGORY + ", " + TypeEntry.COLUMN_UNIT_NAME + ") VALUES ('Jumlah', 'ml')");
+        sqLiteDatabase.execSQL("INSERT INTO " + UserEntry.TABLE_NAME + " (" + UserEntry.COLUMN_NAME + ", " + UserEntry.COLUMN_PIN + ", " + UserEntry.COLUMN_SECURITY_QUESTION + ", " + UserEntry.COLUMN_SECURITY_ANSWER + ") VALUES ('User', '123456', 'Siapa nama kucing peliharaanmu?', 'Kucing')");
+
+        sqLiteDatabase.execSQL("INSERT INTO " + TypeEntry.TABLE_NAME + " (" + TypeEntry.COLUMN_CATEGORY + ", " + TypeEntry.COLUMN_UNIT_NAME + ") VALUES ('Waktu', 'menit')");
+        sqLiteDatabase.execSQL("INSERT INTO " + TypeEntry.TABLE_NAME + " (" + TypeEntry.COLUMN_CATEGORY + ", " + TypeEntry.COLUMN_UNIT_NAME + ") VALUES ('Jumlah', 'mililiter')");
         sqLiteDatabase.execSQL("INSERT INTO " + TypeEntry.TABLE_NAME + " (" + TypeEntry.COLUMN_CATEGORY + ", " + TypeEntry.COLUMN_UNIT_NAME + ") VALUES ('Jumlah', 'repetisi')");
+        sqLiteDatabase.execSQL("INSERT INTO " + TypeEntry.TABLE_NAME + " (" + TypeEntry.COLUMN_CATEGORY + ", " + TypeEntry.COLUMN_UNIT_NAME + ") VALUES ('Jumlah', 'meter')");
 
         sqLiteDatabase.execSQL("INSERT INTO " + ScheduleEntry.TABLE_NAME + " (" + ScheduleEntry.COLUMN_TYPE + ") VALUES ('Harian')");
         sqLiteDatabase.execSQL("INSERT INTO " + ScheduleEntry.TABLE_NAME + " (" + ScheduleEntry.COLUMN_TYPE + ") VALUES ('Mingguan')");
         sqLiteDatabase.execSQL("INSERT INTO " + ScheduleEntry.TABLE_NAME + " (" + ScheduleEntry.COLUMN_TYPE + ") VALUES ('Bulanan')");
+        sqLiteDatabase.execSQL("INSERT INTO " + ScheduleEntry.TABLE_NAME + " (" + ScheduleEntry.COLUMN_TYPE + ") VALUES ('Tahunan')");
     }
 
     @Override

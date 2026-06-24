@@ -25,10 +25,6 @@ public class Type {
 
     @Override
     public String toString() {
-        return "Type{" +
-                "id=" + id +
-                ", category='" + category + '\'' +
-                ", unitName='" + unitName + '\'' +
-                '}';
+        return this.unitName;
     }
 }

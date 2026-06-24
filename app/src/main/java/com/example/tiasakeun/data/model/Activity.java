@@ -23,6 +23,14 @@ public class Activity {
         this.imageResourceId = imageResourceId;
     }
 
+    public Activity(int id,String title, int currentValue, int targetValue, int imageResourceId) {
+        this.id = id;
+        this.title = title;
+        this.currentValue = currentValue;
+        this.targetValue = targetValue;
+        this.imageResourceId = imageResourceId;
+    }
+
     public int getId() {
         return id;
     }

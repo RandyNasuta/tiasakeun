@@ -36,7 +36,7 @@
             app:hintTextColor="@color/accent_blue">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etDialogTitle"
+                android:id="@+id/etActivityTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName"
@@ -50,7 +50,8 @@
             android:hint="@string/type"
             android:layout_marginBottom="16dp"
             app:boxStrokeColor="@color/accent_blue"
-            app:hintTextColor="@color/accent_blue">
+            app:hintTextColor="@color/accent_blue"
+            android:visibility="gone">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/spinnerType"
@@ -95,6 +96,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:hint="@string/target"
                     android:layout_marginHorizontal="4dp"
                     app:boxStrokeColor="@color/accent_blue">
                     <com.google.android.material.textfield.TextInputEditText
@@ -140,7 +142,17 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbSchedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:textColor="@color/primary_text"
+            android:text="@string/schedule"
+            android:layout_marginBottom="8dp"/>
+
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/spinnerScheduleLayout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -157,9 +169,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCreateActivity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tambah"
+            android:text="@string/create"
             android:backgroundTint="@color/accent_blue"
             android:paddingHorizontal="24dp"
             tools:ignore="MissingConstraints"/>

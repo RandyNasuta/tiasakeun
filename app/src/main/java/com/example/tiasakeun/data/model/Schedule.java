@@ -19,9 +19,6 @@ public class Schedule {
 
     @Override
     public String toString() {
-        return "Schedule{" +
-                "id=" + id +
-                ", type='" + type + '\'' +
-                '}';
+        return this.type;
     }
 }
