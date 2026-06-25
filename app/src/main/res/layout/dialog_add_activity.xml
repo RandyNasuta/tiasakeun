@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/title"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             app:boxStrokeColor="@color/accent_blue"
             app:hintTextColor="@color/accent_blue">
 
@@ -48,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/type"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             app:boxStrokeColor="@color/accent_blue"
             app:hintTextColor="@color/accent_blue"
             android:visibility="gone">
@@ -67,7 +67,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="8dp">
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -142,6 +142,22 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/choose_icon"
+            android:layout_marginBottom="8dp"
+            app:boxStrokeColor="@color/accent_blue"
+            app:hintTextColor="@color/accent_blue">
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/spinnerIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="64dp"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/cbSchedule"
             android:layout_width="wrap_content"
@@ -158,7 +174,8 @@
             android:backgroundTint="@color/accent_blue"
             android:text="@string/set_date"
             android:paddingHorizontal="24dp"
-            tools:ignore="MissingConstraints"/>
+            tools:ignore="MissingConstraints"
+            android:layout_marginBottom="8dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnTimeActivity"
@@ -167,15 +184,16 @@
             android:backgroundTint="@color/accent_blue"
             android:text="@string/set_time"
             android:paddingHorizontal="24dp"
-            tools:ignore="MissingConstraints"/>
+            tools:ignore="MissingConstraints"
+            android:layout_marginBottom="8dp"/>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/spinnerScheduleLayout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Jadwal Pengulangan"
-            android:layout_marginBottom="16dp"
+            android:hint="@string/schedule_date"
+            android:layout_marginBottom="8dp"
             app:boxStrokeColor="@color/accent_blue"
             app:hintTextColor="@color/accent_blue">
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -194,6 +212,7 @@
             android:text="@string/create"
             android:backgroundTint="@color/accent_blue"
             android:paddingHorizontal="24dp"
+            android:layout_marginBottom="8dp"
             tools:ignore="MissingConstraints"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

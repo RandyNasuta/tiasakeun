@@ -15,4 +15,6 @@
     <string name="choose_time">Pilih Waktu</string>
     <string name="set_date">Set Tanggal</string>
     <string name="set_time">Set Waktu</string>
+    <string name="choose_icon">Pilih icon</string>
+    <string name="schedule_date">Jadwal Pengulangan</string>
 </resources>

@@ -4,6 +4,7 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
 import android.app.AlertDialog;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -28,6 +30,7 @@ import com.example.tiasakeun.data.model.Schedule;
 import com.example.tiasakeun.data.model.Type;
 import com.example.tiasakeun.data.source.DatabaseDataSource;
 import com.example.tiasakeun.ui.adapter.ActivityAdapter;
+import com.example.tiasakeun.ui.adapter.IconAdapter;
 import com.example.tiasakeun.ui.picker.DatePickerFragment;
 import com.example.tiasakeun.ui.picker.TimePickerFragment;
 import com.google.android.material.button.MaterialButton;
@@ -39,6 +42,7 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -112,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         final Type[] selectedType = {null};
         final Schedule[] selectedSchedule = {null};
         final int[] sYear = {0}, sMonth = {0}, sDay = {0}, sHour = {0}, sMinute = {0};
+        final int[] icon = {0};
 
         //Panggil DatabaseDataSource
         databaseDataSource.open();
@@ -140,12 +145,22 @@ public class MainActivity extends AppCompatActivity {
         MaterialCheckBox cbSchedule = dialogView.findViewById(R.id.cbSchedule);
         MaterialButton btnDateActivity = dialogView.findViewById(R.id.btnDateActivity);
         MaterialButton btnTimeActivity = dialogView.findViewById(R.id.btnTimeActivity);
+        MaterialAutoCompleteTextView spinnerIcon = dialogView.findViewById(R.id.spinnerIcon);
 
         ArrayAdapter<Type> unitAdapter = new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, typesUnits);
         ArrayAdapter<Schedule> scheduleAdapter = new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, scheduleTypes);
 
+        IconAdapter iconAdapter = new IconAdapter(this, R.layout.icon_spinner, new ArrayList<>(
+                List.of(R.drawable.lari,
+                        R.drawable.air_putih,
+                        R.drawable.berenang,
+                        R.drawable.buku,
+                        R.drawable.meditation)
+        ));
+
         spinnerUnit.setAdapter(unitAdapter);
         spinnerSchedule.setAdapter(scheduleAdapter);
+        spinnerIcon.setAdapter(iconAdapter);
 
         //Buat objeck dialog
         AlertDialog dialog = builder.create();
@@ -168,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Kondisi ketika checbox di checked atau unchecked
         cbSchedule.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(@NonNull CompoundButton compoundButton, boolean b) {
@@ -193,6 +209,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Spinner pemilihan icon kegiatan
+        spinnerIcon.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                icon[0] = (int) adapterView.getItemAtPosition(i);
+
+                Drawable drawable = ContextCompat.getDrawable(MainActivity.this, icon[0]);
+
+                if (drawable != null) {
+                    int size = (int) (32 * getResources().getDisplayMetrics().density);
+                    drawable.setBounds(0, 0, size, size);
+                    spinnerIcon.setCompoundDrawablesRelative(drawable, null, null, null);
+                }
+
+                spinnerIcon.setText("");
+            }
+        });
+
+        //Spinner pemilihan penjadwalan: Harian, Bulanan, Tahunan
         spinnerSchedule.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -200,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Tombol untuk mengurangi nilai target
         btnTotalMinus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -213,6 +249,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Tombol untuk menambah nilai target
         btnTotalPlus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -224,6 +261,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Tombol untuk memilih jam kegiatan
         btnTimeActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -242,6 +280,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Tombol untuk memilih tanggal kegiatan
         btnDateActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -287,10 +326,10 @@ public class MainActivity extends AppCompatActivity {
                     formattedDateTimeActivity = String.format(Locale.getDefault(), "%04d-%02d-%02d %02d:%02d:00",
                             sYear[0], sMonth[0] + 1, sDay[0], sHour[0], sMinute[0]);
                 } else {
+                    //Jika penjadwalan tidak di checked, maka kegiatan akan dilakukan pada hari tersebut
                     Calendar current = Calendar.getInstance();
-                    formattedDateTimeActivity = String.format(Locale.getDefault(), "%04d-%02d-%02d %02d:%02d:00",
-                            current.get(Calendar.YEAR), current.get(Calendar.MONTH) + 1, current.get(Calendar.DAY_OF_MONTH),
-                            current.get(Calendar.HOUR_OF_DAY), current.get(Calendar.MINUTE));
+                    formattedDateTimeActivity = String.format(Locale.getDefault(), "%04d-%02d-%02d",
+                            current.get(Calendar.YEAR), current.get(Calendar.MONTH) + 1, current.get(Calendar.DAY_OF_MONTH));
                 }
 
                 databaseDataSource.open();
@@ -306,7 +345,7 @@ public class MainActivity extends AppCompatActivity {
                             0,
                             Integer.parseInt(etTotal.getText().toString()),
                             schduleChecked ? 1 : 0,
-                            R.drawable.lari
+                            icon[0]
                      );
 
                     if (result != -1) {
