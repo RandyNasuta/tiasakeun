@@ -151,6 +151,24 @@
             android:text="@string/schedule"
             android:layout_marginBottom="8dp"/>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDateActivity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/accent_blue"
+            android:text="@string/set_date"
+            android:paddingHorizontal="24dp"
+            tools:ignore="MissingConstraints"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTimeActivity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/accent_blue"
+            android:text="@string/set_time"
+            android:paddingHorizontal="24dp"
+            tools:ignore="MissingConstraints"/>
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/spinnerScheduleLayout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -167,6 +185,7 @@
                 android:inputType="none"
                 android:textColor="@color/primary_text"/>
         </com.google.android.material.textfield.TextInputLayout>
+
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCreateActivity"

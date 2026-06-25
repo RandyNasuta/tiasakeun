@@ -5,17 +5,23 @@ public class Activity {
     private int userId;
     private int typeId;
     private int scheduleId;
+    private String dateActivity;
     private String title;
     private int currentValue;
     private int targetValue;
     private int notification;
     private int imageResourceId;
+    private String unitName;
 
-    public Activity(int id, int userId, int typeId, int scheduleId, String title, int currentValue, int targetValue, int notification, int imageResourceId) {
+    public Activity() {
+    }
+
+    public Activity(int id, int userId, int typeId, int scheduleId, String dateActivity, String title, int currentValue, int targetValue, int notification, int imageResourceId) {
         this.id = id;
         this.userId = userId;
         this.typeId = typeId;
         this.scheduleId = scheduleId;
+        this.dateActivity = dateActivity;
         this.title = title;
         this.currentValue = currentValue;
         this.targetValue = targetValue;
@@ -23,13 +29,7 @@ public class Activity {
         this.imageResourceId = imageResourceId;
     }
 
-    public Activity(int id,String title, int currentValue, int targetValue, int imageResourceId) {
-        this.id = id;
-        this.title = title;
-        this.currentValue = currentValue;
-        this.targetValue = targetValue;
-        this.imageResourceId = imageResourceId;
-    }
+
 
     public int getId() {
         return id;
@@ -61,6 +61,14 @@ public class Activity {
 
     public void setScheduleId(int scheduleId) {
         this.scheduleId = scheduleId;
+    }
+
+    public String getDateActivity() {
+        return dateActivity;
+    }
+
+    public void setDateActivity(String dateActivity) {
+        this.dateActivity = dateActivity;
     }
 
     public String getTitle() {
@@ -101,6 +109,14 @@ public class Activity {
 
     public void setImageResourceId(int imageResourceId) {
         this.imageResourceId = imageResourceId;
+    }
+
+    public String getUnitName() {
+        return unitName;
+    }
+
+    public void setUnitName(String unitName) {
+        this.unitName = unitName;
     }
 
     @Override

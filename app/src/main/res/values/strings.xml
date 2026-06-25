@@ -11,4 +11,8 @@
     <string name="target">Target</string>
     <string name="failed_to_save_the_data">Gagal menyimpan data!</string>
     <string name="schedule">Penjadwalan</string>
+    <string name="choose_date">Pilih Tanggal</string>
+    <string name="choose_time">Pilih Waktu</string>
+    <string name="set_date">Set Tanggal</string>
+    <string name="set_time">Set Waktu</string>
 </resources>

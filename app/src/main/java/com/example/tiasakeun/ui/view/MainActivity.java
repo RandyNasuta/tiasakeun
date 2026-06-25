@@ -28,6 +28,8 @@ import com.example.tiasakeun.data.model.Schedule;
 import com.example.tiasakeun.data.model.Type;
 import com.example.tiasakeun.data.source.DatabaseDataSource;
 import com.example.tiasakeun.ui.adapter.ActivityAdapter;
+import com.example.tiasakeun.ui.picker.DatePickerFragment;
+import com.example.tiasakeun.ui.picker.TimePickerFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -36,6 +38,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -107,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
         //Variabel
         final Type[] selectedType = {null};
         final Schedule[] selectedSchedule = {null};
+        final int[] sYear = {0}, sMonth = {0}, sDay = {0}, sHour = {0}, sMinute = {0};
 
         //Panggil DatabaseDataSource
         databaseDataSource.open();
@@ -133,6 +138,8 @@ public class MainActivity extends AppCompatActivity {
         MaterialAutoCompleteTextView spinnerSchedule = dialogView.findViewById(R.id.spinnerSchedule);
         MaterialButton btnCreateActivity = dialogView.findViewById(R.id.btnCreateActivity);
         MaterialCheckBox cbSchedule = dialogView.findViewById(R.id.cbSchedule);
+        MaterialButton btnDateActivity = dialogView.findViewById(R.id.btnDateActivity);
+        MaterialButton btnTimeActivity = dialogView.findViewById(R.id.btnTimeActivity);
 
         ArrayAdapter<Type> unitAdapter = new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, typesUnits);
         ArrayAdapter<Schedule> scheduleAdapter = new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, scheduleTypes);
@@ -148,6 +155,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         spinnerScheduleLayout.setVisibility(GONE);
+        btnTimeActivity.setVisibility(GONE);
+        btnDateActivity.setVisibility(GONE);
 
         dialog.show();
 
@@ -164,8 +173,22 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(@NonNull CompoundButton compoundButton, boolean b) {
                 if (b) {
                     spinnerScheduleLayout.setVisibility(VISIBLE);
+                    btnTimeActivity.setVisibility(VISIBLE);
+                    btnDateActivity.setVisibility(VISIBLE);
+
                 } else {
                     spinnerScheduleLayout.setVisibility(GONE);
+                    btnTimeActivity.setVisibility(GONE);
+                    btnDateActivity.setVisibility(GONE);
+
+                    selectedSchedule[0] = null;
+                    sYear[0] = 0;
+                    sMonth[0] = 0;
+                    sDay[0] = 0;
+                    sHour[0] = 0;
+                    sMinute[0] = 0;
+                    btnTimeActivity.setText(R.string.set_time);
+                    btnDateActivity.setText(R.string.set_date);
                 }
             }
         });
@@ -201,6 +224,43 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnTimeActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                TimePickerFragment fragment = new TimePickerFragment();
+
+                fragment.setTimePickerListener(new TimePickerFragment.TimePickerListener() {
+                    @Override
+                    public void onTimeSelected(int hour, int minute) {
+                        sHour[0] = hour;
+                        sMinute[0] = minute;
+                        btnTimeActivity.setText(String.format(Locale.getDefault(), "%02d:%02d", hour, minute));
+                    }
+                });
+
+                fragment.show(getSupportFragmentManager(), "TimePicker");
+            }
+        });
+
+        btnDateActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatePickerFragment fragment = new DatePickerFragment();
+
+                fragment.setDatePickerListener(new DatePickerFragment.DatePickerListener() {
+                    @Override
+                    public void onDateSelected(int day, int month, int year) {
+                        sYear[0] = year;
+                        sMonth[0] = month;
+                        sDay[0] = day;
+                        btnDateActivity.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", day, month+1, year));
+                    }
+                });
+
+                fragment.show(getSupportFragmentManager(), "DatePicker");
+            }
+        });
+
         //Tombol untuk membuat activity
         btnCreateActivity.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -210,12 +270,27 @@ public class MainActivity extends AppCompatActivity {
                 String title = etActivityTitle.getText().toString().trim();
                 String total = etTotal.getText().toString().trim();
 
-                if (title.isEmpty() || total.isEmpty() || selectedType[0] == null || selectedSchedule[0] == null) {
+                boolean isScheduleChecked = cbSchedule.isChecked();
+                boolean isScheduleValid = !isScheduleChecked || (selectedSchedule[0] != null && sYear[0] != 0 && sHour[0] != 0);
+
+                if (title.isEmpty() || total.isEmpty() || selectedType[0] == null || selectedSchedule[0] == null || !isScheduleValid) {
                     if (title.isEmpty()) {
                         etActivityTitle.setError("Tidak boleh kosong");
                     }
-                    Toast.makeText(MainActivity.this, "Judul dan target harus diisi", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Mohon lengkapi data", Toast.LENGTH_SHORT).show();
                     return;
+                }
+
+                String formattedDateTimeActivity;
+
+                if (isScheduleChecked) {
+                    formattedDateTimeActivity = String.format(Locale.getDefault(), "%04d-%02d-%02d %02d:%02d:00",
+                            sYear[0], sMonth[0] + 1, sDay[0], sHour[0], sMinute[0]);
+                } else {
+                    Calendar current = Calendar.getInstance();
+                    formattedDateTimeActivity = String.format(Locale.getDefault(), "%04d-%02d-%02d %02d:%02d:00",
+                            current.get(Calendar.YEAR), current.get(Calendar.MONTH) + 1, current.get(Calendar.DAY_OF_MONTH),
+                            current.get(Calendar.HOUR_OF_DAY), current.get(Calendar.MINUTE));
                 }
 
                 databaseDataSource.open();
@@ -226,6 +301,7 @@ public class MainActivity extends AppCompatActivity {
                             1,
                             selectedType[0].getId(),
                             schduleChecked ? selectedSchedule[0].getId() : null,
+                            formattedDateTimeActivity,
                             title,
                             0,
                             Integer.parseInt(etTotal.getText().toString()),

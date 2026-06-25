@@ -35,8 +35,9 @@ public class DatabaseDataSource {
     }
 
     //CREATE
-    public long createActivity(long userId, long typeId, long scheduleId, String title, int currentValue, int targetValue, int notification, int imageResource) {
+    public long createActivity(long userId, long typeId, long scheduleId, String dateActivity, String title, int currentValue, int targetValue, int notification, int imageResource) {
         ContentValues values = new ContentValues();
+        values.put(ActivityContract.ActivityEntry.COLUMN_DATE_ACTIVITY, dateActivity);
         values.put(ActivityContract.ActivityEntry.COLUMN_TITLE, title);
         values.put(ActivityContract.ActivityEntry.COLUMN_USER_ID, userId);
         values.put(ActivityContract.ActivityEntry.COLUMN_TYPE_ID, typeId);
@@ -52,12 +53,23 @@ public class DatabaseDataSource {
 
     public ArrayList<Activity> getAllActivities() {
         ArrayList<Activity> activities = new ArrayList<>();
-        String query = "Select _id, title, current_value, target_value, image_resource FROM " + ActivityContract.ActivityEntry.TABLE_NAME;
+        String query = "Select " + ActivityContract.ActivityEntry.TABLE_NAME + "." + ActivityContract.ActivityEntry._ID  +
+                ", title, current_value, target_value, image_resource, " + TypeContract.TypeEntry.COLUMN_UNIT_NAME + " FROM " +
+                ActivityContract.ActivityEntry.TABLE_NAME + " INNER JOIN " + TypeContract.TypeEntry.TABLE_NAME + " ON " +
+                ActivityContract.ActivityEntry.COLUMN_TYPE_ID + " = " + TypeContract.TypeEntry.TABLE_NAME + "." +TypeContract.TypeEntry._ID;
+
         Cursor cursor = database.rawQuery(query, null);
 
         if (cursor.moveToFirst()) {
             do {
-                activities.add(new Activity(cursor.getInt(0), cursor.getString(1), cursor.getInt(2), cursor.getInt(3), cursor.getInt(4)));
+                Activity activity = new Activity();
+                activity.setId(cursor.getInt(0));
+                activity.setTitle(cursor.getString(1));
+                activity.setCurrentValue(cursor.getInt(2));
+                activity.setTargetValue(cursor.getInt(3));
+                activity.setImageResourceId(cursor.getInt(4));
+                activity.setUnitName(cursor.getString(5));
+                activities.add(activity);
             } while (cursor.moveToNext());
         }
         cursor.close();
