@@ -12,11 +12,12 @@ public class Activity {
     private int notification;
     private int imageResourceId;
     private String unitName;
+    private boolean isCompleted;
 
     public Activity() {
     }
 
-    public Activity(int id, int userId, int typeId, int scheduleId, String dateActivity, String title, int currentValue, int targetValue, int notification, int imageResourceId) {
+    public Activity(int id, int userId, int typeId, int scheduleId, String dateActivity, String title, int currentValue, int targetValue, int notification, int imageResourceId, String unitName, boolean isCompleted) {
         this.id = id;
         this.userId = userId;
         this.typeId = typeId;
@@ -27,9 +28,9 @@ public class Activity {
         this.targetValue = targetValue;
         this.notification = notification;
         this.imageResourceId = imageResourceId;
+        this.unitName = unitName;
+        this.isCompleted = isCompleted;
     }
-
-
 
     public int getId() {
         return id;
@@ -117,6 +118,14 @@ public class Activity {
 
     public void setUnitName(String unitName) {
         this.unitName = unitName;
+    }
+
+    public boolean isCompleted() {
+        return isCompleted;
+    }
+
+    public void setCompleted(boolean completed) {
+        isCompleted = completed;
     }
 
     @Override

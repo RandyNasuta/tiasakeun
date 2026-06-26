@@ -46,6 +46,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     ActivityEntry.COLUMN_SCHEDULE_ID + " INTEGER, " +
                     ActivityEntry.COLUMN_DATE_ACTIVITY + " TEXT NOT NULL, " +
                     ActivityEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
+                    ActivityEntry.COLUMN_IS_COMPLETED + " INTEGER NOT NULL, " +
                     ActivityEntry.COLUMN_CURRENT_VALUE + " INTEGER NOT NULL, " +
                     ActivityEntry.COLUMN_TARGET_VALUE + " INTEGER NOT NULL, " +
                     ActivityEntry.COLUMN_NOTIFICATION + " INTEGER NOT NULL, " +

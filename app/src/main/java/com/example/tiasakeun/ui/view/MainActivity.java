@@ -312,10 +312,15 @@ public class MainActivity extends AppCompatActivity {
                 boolean isScheduleChecked = cbSchedule.isChecked();
                 boolean isScheduleValid = !isScheduleChecked || (selectedSchedule[0] != null && sYear[0] != 0 && sHour[0] != 0);
 
-                if (title.isEmpty() || total.isEmpty() || selectedType[0] == null || selectedSchedule[0] == null || !isScheduleValid) {
+                if (title.isEmpty() || total.isEmpty() || selectedType[0] == null || !isScheduleValid) {
                     if (title.isEmpty()) {
                         etActivityTitle.setError("Tidak boleh kosong");
                     }
+                    Log.i(TAG, "title " + title.isEmpty());
+                    Log.i(TAG, "total " + total.isEmpty());
+                    Log.i(TAG, "type " + selectedType[0]);
+                    Log.i(TAG, "schedule " + selectedSchedule[0]);
+                    Log.i(TAG, "valid schedule " + isScheduleValid);
                     Toast.makeText(MainActivity.this, "Mohon lengkapi data", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -335,16 +340,18 @@ public class MainActivity extends AppCompatActivity {
                 databaseDataSource.open();
 
                 try {
-                    boolean schduleChecked = cbSchedule.isChecked();
+                    boolean scheduleChecked = cbSchedule.isChecked();
+                    Log.i(TAG, "onClick: scheduleChecked " + scheduleChecked);
                     long result = databaseDataSource.createActivity(
                             1,
                             selectedType[0].getId(),
-                            schduleChecked ? selectedSchedule[0].getId() : null,
+                            scheduleChecked ? selectedSchedule[0].getId() : 0,
                             formattedDateTimeActivity,
                             title,
+                            false,
                             0,
                             Integer.parseInt(etTotal.getText().toString()),
-                            schduleChecked ? 1 : 0,
+                            scheduleChecked ? 1 : 0,
                             icon[0]
                      );
 
