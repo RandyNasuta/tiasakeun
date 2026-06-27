@@ -2,34 +2,18 @@ package com.example.tiasakeun.data.model;
 
 public class Activity {
     private int id;
-    private int userId;
     private int typeId;
-    private int scheduleId;
-    private String dateActivity;
-    private String title;
-    private int currentValue;
-    private int targetValue;
-    private int notification;
+    private String title;;
     private int imageResourceId;
-    private String unitName;
-    private boolean isCompleted;
 
     public Activity() {
     }
 
-    public Activity(int id, int userId, int typeId, int scheduleId, String dateActivity, String title, int currentValue, int targetValue, int notification, int imageResourceId, String unitName, boolean isCompleted) {
+    public Activity(int id, int typeId, String title, int imageResourceId) {
         this.id = id;
-        this.userId = userId;
         this.typeId = typeId;
-        this.scheduleId = scheduleId;
-        this.dateActivity = dateActivity;
         this.title = title;
-        this.currentValue = currentValue;
-        this.targetValue = targetValue;
-        this.notification = notification;
         this.imageResourceId = imageResourceId;
-        this.unitName = unitName;
-        this.isCompleted = isCompleted;
     }
 
     public int getId() {
@@ -40,36 +24,12 @@ public class Activity {
         this.id = id;
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
     public int getTypeId() {
         return typeId;
     }
 
     public void setTypeId(int typeId) {
         this.typeId = typeId;
-    }
-
-    public int getScheduleId() {
-        return scheduleId;
-    }
-
-    public void setScheduleId(int scheduleId) {
-        this.scheduleId = scheduleId;
-    }
-
-    public String getDateActivity() {
-        return dateActivity;
-    }
-
-    public void setDateActivity(String dateActivity) {
-        this.dateActivity = dateActivity;
     }
 
     public String getTitle() {
@@ -80,30 +40,6 @@ public class Activity {
         this.title = title;
     }
 
-    public int getCurrentValue() {
-        return currentValue;
-    }
-
-    public void setCurrentValue(int currentValue) {
-        this.currentValue = currentValue;
-    }
-
-    public int getTargetValue() {
-        return targetValue;
-    }
-
-    public void setTargetValue(int targetValue) {
-        this.targetValue = targetValue;
-    }
-
-    public int getNotification() {
-        return notification;
-    }
-
-    public void setNotification(int notification) {
-        this.notification = notification;
-    }
-
     public int getImageResourceId() {
         return imageResourceId;
     }
@@ -112,33 +48,12 @@ public class Activity {
         this.imageResourceId = imageResourceId;
     }
 
-    public String getUnitName() {
-        return unitName;
-    }
-
-    public void setUnitName(String unitName) {
-        this.unitName = unitName;
-    }
-
-    public boolean isCompleted() {
-        return isCompleted;
-    }
-
-    public void setCompleted(boolean completed) {
-        isCompleted = completed;
-    }
-
     @Override
     public String toString() {
         return "Activity{" +
                 "id=" + id +
-                ", userId=" + userId +
                 ", typeId=" + typeId +
-                ", scheduleId=" + scheduleId +
                 ", title='" + title + '\'' +
-                ", currentValue=" + currentValue +
-                ", targetValue=" + targetValue +
-                ", notification=" + notification +
                 ", imageResourceId=" + imageResourceId +
                 '}';
     }

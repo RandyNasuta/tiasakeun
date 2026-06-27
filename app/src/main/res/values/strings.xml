@@ -18,4 +18,5 @@
     <string name="choose_icon">Pilih icon</string>
     <string name="schedule_date">Jadwal Pengulangan</string>
     <string name="completion_activity">Konfirmasi Penyelesaian</string>
+    <string name="unit">Satuan</string>
 </resources>

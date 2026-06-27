@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -136,15 +135,7 @@ public class MainActivity extends AppCompatActivity {
         //Inisialisasi view
         TextInputEditText etActivityTitle = dialogView.findViewById(R.id.etActivityTitle);
         MaterialAutoCompleteTextView spinnerUnit = dialogView.findViewById(R.id.spinnerUnit);
-        TextInputEditText etTotal = dialogView.findViewById(R.id.etTotal);
-        MaterialButton btnTotalMinus = dialogView.findViewById(R.id.btnTotalMinus);
-        MaterialButton btnTotalPlus = dialogView.findViewById(R.id.btnTotalPlus);
-        TextInputLayout spinnerScheduleLayout = dialogView.findViewById(R.id.spinnerScheduleLayout);
-        MaterialAutoCompleteTextView spinnerSchedule = dialogView.findViewById(R.id.spinnerSchedule);
         MaterialButton btnCreateActivity = dialogView.findViewById(R.id.btnCreateActivity);
-        MaterialCheckBox cbSchedule = dialogView.findViewById(R.id.cbSchedule);
-        MaterialButton btnDateActivity = dialogView.findViewById(R.id.btnDateActivity);
-        MaterialButton btnTimeActivity = dialogView.findViewById(R.id.btnTimeActivity);
         MaterialAutoCompleteTextView spinnerIcon = dialogView.findViewById(R.id.spinnerIcon);
 
         ArrayAdapter<Type> unitAdapter = new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, typesUnits);
@@ -159,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
         ));
 
         spinnerUnit.setAdapter(unitAdapter);
-        spinnerSchedule.setAdapter(scheduleAdapter);
         spinnerIcon.setAdapter(iconAdapter);
 
         //Buat objeck dialog
@@ -169,10 +159,6 @@ public class MainActivity extends AppCompatActivity {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
 
-        spinnerScheduleLayout.setVisibility(GONE);
-        btnTimeActivity.setVisibility(GONE);
-        btnDateActivity.setVisibility(GONE);
-
         dialog.show();
 
         //Jika satuannya dipilih, maka ubah nilai unit ke default
@@ -180,32 +166,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedType[0] = (Type) adapterView.getItemAtPosition(i);
-            }
-        });
-
-        //Kondisi ketika checbox di checked atau unchecked
-        cbSchedule.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(@NonNull CompoundButton compoundButton, boolean b) {
-                if (b) {
-                    spinnerScheduleLayout.setVisibility(VISIBLE);
-                    btnTimeActivity.setVisibility(VISIBLE);
-                    btnDateActivity.setVisibility(VISIBLE);
-
-                } else {
-                    spinnerScheduleLayout.setVisibility(GONE);
-                    btnTimeActivity.setVisibility(GONE);
-                    btnDateActivity.setVisibility(GONE);
-
-                    selectedSchedule[0] = null;
-                    sYear[0] = 0;
-                    sMonth[0] = 0;
-                    sDay[0] = 0;
-                    sHour[0] = 0;
-                    sMinute[0] = 0;
-                    btnTimeActivity.setText(R.string.set_time);
-                    btnDateActivity.setText(R.string.set_date);
-                }
             }
         });
 
@@ -227,79 +187,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //Spinner pemilihan penjadwalan: Harian, Bulanan, Tahunan
-        spinnerSchedule.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                selectedSchedule[0] = (Schedule) adapterView.getItemAtPosition(i);
-            }
-        });
-
-        //Tombol untuk mengurangi nilai target
-        btnTotalMinus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String text = etTotal.getText().toString().trim();
-                int currValue = text.isEmpty() ? 0 : Integer.valueOf(etTotal.getText().toString());
-
-                if (currValue > 0) {
-                    currValue--;
-                    etTotal.setText(String.valueOf(currValue));
-                }
-            }
-        });
-
-        //Tombol untuk menambah nilai target
-        btnTotalPlus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String text = etTotal.getText().toString().trim();
-                int currValue = text.isEmpty() ? 0 : Integer.valueOf(etTotal.getText().toString());
-
-                currValue++;
-                etTotal.setText(String.valueOf(currValue));
-            }
-        });
-
-        //Tombol untuk memilih jam kegiatan
-        btnTimeActivity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                TimePickerFragment fragment = new TimePickerFragment();
-
-                fragment.setTimePickerListener(new TimePickerFragment.TimePickerListener() {
-                    @Override
-                    public void onTimeSelected(int hour, int minute) {
-                        sHour[0] = hour;
-                        sMinute[0] = minute;
-                        btnTimeActivity.setText(String.format(Locale.getDefault(), "%02d:%02d", hour, minute));
-                    }
-                });
-
-                fragment.show(getSupportFragmentManager(), "TimePicker");
-            }
-        });
-
-        //Tombol untuk memilih tanggal kegiatan
-        btnDateActivity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DatePickerFragment fragment = new DatePickerFragment();
-
-                fragment.setDatePickerListener(new DatePickerFragment.DatePickerListener() {
-                    @Override
-                    public void onDateSelected(int day, int month, int year) {
-                        sYear[0] = year;
-                        sMonth[0] = month;
-                        sDay[0] = day;
-                        btnDateActivity.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", day, month+1, year));
-                    }
-                });
-
-                fragment.show(getSupportFragmentManager(), "DatePicker");
-            }
-        });
-
         //Tombol untuk membuat activity
         btnCreateActivity.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -307,51 +194,25 @@ public class MainActivity extends AppCompatActivity {
                 //Validasi semua input data yang penting harus di isi
                 //Jika field Judul, tipe, nilai, dan satuannya kosong, maka munculkan error
                 String title = etActivityTitle.getText().toString().trim();
-                String total = etTotal.getText().toString().trim();
 
-                boolean isScheduleChecked = cbSchedule.isChecked();
-                boolean isScheduleValid = !isScheduleChecked || (selectedSchedule[0] != null && sYear[0] != 0 && sHour[0] != 0);
-
-                if (title.isEmpty() || total.isEmpty() || selectedType[0] == null || !isScheduleValid) {
+                if (title.isEmpty() || selectedType[0] == null ) {
                     if (title.isEmpty()) {
                         etActivityTitle.setError("Tidak boleh kosong");
                     }
                     Log.i(TAG, "title " + title.isEmpty());
-                    Log.i(TAG, "total " + total.isEmpty());
                     Log.i(TAG, "type " + selectedType[0]);
                     Log.i(TAG, "schedule " + selectedSchedule[0]);
-                    Log.i(TAG, "valid schedule " + isScheduleValid);
                     Toast.makeText(MainActivity.this, "Mohon lengkapi data", Toast.LENGTH_SHORT).show();
                     return;
-                }
-
-                String formattedDateTimeActivity;
-
-                if (isScheduleChecked) {
-                    formattedDateTimeActivity = String.format(Locale.getDefault(), "%04d-%02d-%02d %02d:%02d:00",
-                            sYear[0], sMonth[0] + 1, sDay[0], sHour[0], sMinute[0]);
-                } else {
-                    //Jika penjadwalan tidak di checked, maka kegiatan akan dilakukan pada hari tersebut
-                    Calendar current = Calendar.getInstance();
-                    formattedDateTimeActivity = String.format(Locale.getDefault(), "%04d-%02d-%02d",
-                            current.get(Calendar.YEAR), current.get(Calendar.MONTH) + 1, current.get(Calendar.DAY_OF_MONTH));
                 }
 
                 databaseDataSource.open();
 
                 try {
-                    boolean scheduleChecked = cbSchedule.isChecked();
-                    Log.i(TAG, "onClick: scheduleChecked " + scheduleChecked);
                     long result = databaseDataSource.createActivity(
                             1,
                             selectedType[0].getId(),
-                            scheduleChecked ? selectedSchedule[0].getId() : 0,
-                            formattedDateTimeActivity,
                             title,
-                            false,
-                            0,
-                            Integer.parseInt(etTotal.getText().toString()),
-                            scheduleChecked ? 1 : 0,
                             icon[0]
                      );
 

@@ -16,45 +16,22 @@
         android:padding="16dp"
         android:gravity="center_vertical">
 
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/cbActivity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:buttonTint="@color/accent_blue" />
-
-        <LinearLayout
+        <TextView
+            android:id="@+id/tVActivityTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="20sp"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginEnd="16dp">
-
-            <TextView
-                android:id="@+id/tVActivityTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:textSize="20sp"
-                android:textColor="@color/primary_text"
-                android:text="@string/example_activity_text"/>
-
-            <TextView
-                android:id="@+id/tVActivityProgress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/accent_blue"
-                android:text="@string/example_activity_progress"/>
-        </LinearLayout>
+            android:textColor="@color/primary_text"
+            android:text="@string/example_activity_text"/>
 
         <ImageView
             android:id="@+id/iVActivityMark"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:scaleType="centerInside"
+            android:layout_marginStart="8dp"
             android:src="@drawable/air_putih"/>
 
     </LinearLayout>
