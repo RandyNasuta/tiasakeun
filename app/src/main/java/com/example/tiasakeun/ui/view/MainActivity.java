@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         activityList.addAll(databaseDataSource.getAllActivities());
         databaseDataSource.close();
 
-        activityAdapter = new ActivityAdapter(activityList);
+        activityAdapter = new ActivityAdapter(MainActivity.this, activityList);
         rVActiviy.setAdapter(activityAdapter);
     }
 

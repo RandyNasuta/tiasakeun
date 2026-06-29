@@ -19,4 +19,5 @@
     <string name="schedule_date">Jadwal Pengulangan</string>
     <string name="completion_activity">Konfirmasi Penyelesaian</string>
     <string name="unit">Satuan</string>
+    <string name="sub_activity">Sub Activity</string>
 </resources>
