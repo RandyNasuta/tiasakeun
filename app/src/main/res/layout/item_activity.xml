@@ -56,12 +56,29 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#1A000000"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCreateSubActivity"
+                android:layout_margin="8dp"
+                android:layout_width="48dp"
+                android:layout_height="32dp"
+                android:backgroundTint="@color/accent_blue"
+                android:layout_gravity="end"
+                app:icon="@drawable/outline_add_24"
+                app:iconGravity="textStart"
+                android:padding="0dp"
+                app:iconPadding="0dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvSubActivities"

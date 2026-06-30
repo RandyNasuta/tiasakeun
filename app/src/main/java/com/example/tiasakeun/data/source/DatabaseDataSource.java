@@ -47,6 +47,18 @@ public class DatabaseDataSource {
         return database.insert(ActivityEntry.TABLE_NAME, null, values);
     }
 
+    public long createSubActivity(long activityId, long schduleId, String title, int targetValuye, String dateActivityt, int notification, int isCompleted) {
+        ContentValues values = new ContentValues();
+        values.put(SubActivityEntry.COLUMN_ACTIVITY_ID, activityId);
+        values.put(SubActivityEntry.COLUMN_SCHEDULE_ID, schduleId);
+        values.put(SubActivityEntry.COLUMN_TITLE, title);
+        values.put(SubActivityEntry.COLUMN_TARGET_VALUE, targetValuye);
+        values.put(SubActivityEntry.COLUMN_DATE_ACTIVITY, dateActivityt);
+        values.put(SubActivityEntry.COLUMN_NOTIFICATION, notification);
+        values.put(SubActivityEntry.COLUMN_IS_COMPLETED, isCompleted);
+        return database.insert(SubActivityEntry.TABLE_NAME, null, values);
+    }
+
     public long createActivityLog(long activityId, int value, String date) {
         ContentValues values = new ContentValues();
         values.put(ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID, activityId);
