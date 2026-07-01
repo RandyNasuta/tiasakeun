@@ -76,7 +76,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
         subActivities = databaseDataSource.getSubActivities(activity.getId());
         databaseDataSource.close();
 
-        SubActivityAdapter subActivityAdapter = new SubActivityAdapter(subActivities);
+        subActivityAdapter = new SubActivityAdapter(subActivities, context);
         holder.rvSubActivities.setAdapter(subActivityAdapter);
 
         holder.btnAddSubActivity.setOnClickListener(new View.OnClickListener() {

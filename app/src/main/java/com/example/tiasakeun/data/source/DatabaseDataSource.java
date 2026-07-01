@@ -108,15 +108,19 @@ public class DatabaseDataSource {
                 SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID  + ", " +
                 SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_TITLE  + ", " +
                 SubActivityEntry.COLUMN_TARGET_VALUE + ", " +
-                SubActivityEntry.COLUMN_IS_COMPLETED + ", " +
+                SubActivityEntry.COLUMN_NOTIFICATION + ", " +
+                SubActivityEntry.COLUMN_DATE_ACTIVITY + ", " +
+                SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_ACTIVITY_ID + ", " +
+                ScheduleEntry.TABLE_NAME + "." + ScheduleEntry.COLUMN_TYPE + ", " +
                 TypeEntry.TABLE_NAME + "." +  TypeEntry.COLUMN_UNIT_NAME + ", " +
                 "IFNULL(SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + "), 0) AS current_value " +
-                " FROM " + SubActivityEntry.TABLE_NAME + " " +
-                "INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID +
+                " FROM " + SubActivityEntry.TABLE_NAME +
+                " INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID +
                 " INNER JOIN " + TypeEntry.TABLE_NAME + " ON " + ActivityEntry.COLUMN_TYPE_ID + " = " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID +
+                " INNER JOIN " + ScheduleEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_SCHEDULE_ID + " = " + ScheduleEntry.TABLE_NAME + "." + TypeEntry._ID +
                 " LEFT JOIN " + ActivityLogEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID +
-                " WHERE " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + activityId + " " +
-                "GROUP BY " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID;
+                " WHERE " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + activityId +
+                " GROUP BY " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID;
 
         Cursor cursor = database.rawQuery(query, null);
 
@@ -124,9 +128,12 @@ public class DatabaseDataSource {
             do {
                 SubActivity subActivity = new SubActivity();
                 subActivity.setId(cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry._ID)));
+                subActivity.setActivityId(cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_ACTIVITY_ID)));
                 subActivity.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_TITLE)));
+                subActivity.setDateActivity(cursor.getString(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_DATE_ACTIVITY)));
+                subActivity.setNotification(cursor.getInt(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_NOTIFICATION)));
+                subActivity.setScheduleType(cursor.getString(cursor.getColumnIndexOrThrow(ScheduleEntry.COLUMN_TYPE)));
                 subActivity.setTargetValue(cursor.getInt(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_TARGET_VALUE)));
-                subActivity.setIsCompleted(cursor.getInt(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_IS_COMPLETED)));
                 subActivity.setUnitName(cursor.getString(cursor.getColumnIndexOrThrow(TypeEntry.COLUMN_UNIT_NAME)));
                 subActivity.setCurrentValue(cursor.getInt(cursor.getColumnIndexOrThrow("current_value")));
                 subActivities.add(subActivity);
@@ -164,7 +171,31 @@ public class DatabaseDataSource {
         cursor.close();
         return schedules;
     }
+
+    public Schedule getScheduleByType(String type) {
+        Schedule schedule = null;
+        String query = "Select _id, type FROM " + ScheduleEntry.TABLE_NAME + " WHERE type LIKE '" + type + "'";
+        Cursor cursor = database.rawQuery(query, null);
+        if (cursor.moveToFirst()) {
+            schedule = new Schedule(cursor.getInt(0), cursor.getString(1));
+        }
+        cursor.close();
+        return schedule;
+    }
+
     //UPDATE
+    public long updateSubActivity(long id, long ScheduleId, String title, int targetValue, String dateActivity, int notification) {
+        ContentValues values = new ContentValues();
+        values.put(SubActivityEntry.COLUMN_SCHEDULE_ID, ScheduleId);
+        values.put(SubActivityEntry.COLUMN_TITLE, title);
+        values.put(SubActivityEntry.COLUMN_TARGET_VALUE, targetValue);
+        values.put(SubActivityEntry.COLUMN_DATE_ACTIVITY, dateActivity);
+        values.put(SubActivityEntry.COLUMN_NOTIFICATION, notification);
+
+        String whereClause = SubActivityEntry._ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+        return database.update(SubActivityEntry.TABLE_NAME, values, whereClause, whereArgs);
+    }
 
     //DELETE
 }

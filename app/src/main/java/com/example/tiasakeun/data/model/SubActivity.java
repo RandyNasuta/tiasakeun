@@ -12,6 +12,7 @@ public class SubActivity {
 
     private int currentValue;
     private String unitName;
+    private String scheduleType;
 
     public SubActivity() {
     }
@@ -94,6 +95,14 @@ public class SubActivity {
 
     public void setUnitName(String unitName) {
         this.unitName = unitName;
+    }
+
+    public String getScheduleType() {
+        return scheduleType;
+    }
+
+    public void setScheduleType(String scheduleType) {
+        this.scheduleType = scheduleType;
     }
 
     @Override
