@@ -21,4 +21,6 @@
     <string name="unit">Satuan</string>
     <string name="sub_activity">Sub Activity</string>
     <string name="update">Ubah</string>
+    <string name="finish">Selesai</string>
+    <string name="save_time">Simpan waktu</string>
 </resources>

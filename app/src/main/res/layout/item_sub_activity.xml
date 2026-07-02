@@ -32,7 +32,7 @@
             android:textStyle="bold"/>
 
         <TextView
-            android:id="@+id/tvSuProgress"
+            android:id="@+id/tvSubProgress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/example_activity_progress"

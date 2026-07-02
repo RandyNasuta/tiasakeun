@@ -63,7 +63,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
     public void onBindViewHolder(@NonNull SubActivityAdapter.ViewHolder holder, int position) {
         SubActivity subActivity = subActivities.get(position);
         holder.tvSubTitle.setText(subActivity.getTitle());
-        holder.tvSuProgress.setText(String.format("%s / %s %s", String.valueOf(subActivity.getCurrentValue()), String.valueOf(subActivity.getTargetValue()), subActivity.getUnitName()));
+        holder.tvSubProgress.setText(String.format("%s / %s %s", String.valueOf(subActivity.getCurrentValue()), String.valueOf(subActivity.getTargetValue()), subActivity.getUnitName()));
 
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -318,12 +318,12 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvSubTitle;
-        TextView tvSuProgress;
+        TextView tvSubProgress;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvSubTitle = itemView.findViewById(R.id.tvSubTitle);
-            tvSuProgress = itemView.findViewById(R.id.tvSuProgress);
+            tvSubProgress = itemView.findViewById(R.id.tvSubProgress);
         }
     }
 }
