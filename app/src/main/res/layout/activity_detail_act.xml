@@ -5,14 +5,13 @@
     android:id="@+id/detail_act"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.view.DetailActActivity"
-    android:background="?android:background"
-    android:padding="16dp">
+    tools:context=".ui.view.DetailActActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_margin="24dp">
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -20,8 +19,7 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:strokeWidth="0dp"
-            android:backgroundTint="@color/window_background"
-            android:layout_marginBottom="24dp">
+            android:backgroundTint="@color/window_background">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -51,7 +49,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:visibility="gone">
+                    android:visibility="visible">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -139,7 +137,8 @@
                     android:id="@+id/llTimer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
                     <FrameLayout
                         android:layout_width="match_parent"

@@ -7,7 +7,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,7 +72,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
         holder.rvSubActivities.setLayoutManager(new LinearLayoutManager(context));
 
         databaseDataSource.open();
-        subActivities = databaseDataSource.getSubActivities(activity.getId());
+        subActivities = databaseDataSource.getSubActivitiesByActivityId(activity.getId());
         databaseDataSource.close();
 
         subActivityAdapter = new SubActivityAdapter(subActivities, context);
@@ -266,7 +265,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
 
                                 databaseDataSource.open();
-                                ArrayList<SubActivity> newSubActivities = databaseDataSource.getSubActivities(activity.getId());
+                                ArrayList<SubActivity> newSubActivities = databaseDataSource.getSubActivitiesByActivityId(activity.getId());
                                 databaseDataSource.close();
 
                                 subActivities.clear();

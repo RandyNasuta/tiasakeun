@@ -139,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
         MaterialAutoCompleteTextView spinnerIcon = dialogView.findViewById(R.id.spinnerIcon);
 
         ArrayAdapter<Type> unitAdapter = new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, typesUnits);
-        ArrayAdapter<Schedule> scheduleAdapter = new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, scheduleTypes);
 
         IconAdapter iconAdapter = new IconAdapter(this, R.layout.icon_spinner, new ArrayList<>(
                 List.of(R.drawable.lari,

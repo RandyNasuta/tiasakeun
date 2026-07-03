@@ -5,6 +5,7 @@ import static android.view.View.VISIBLE;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,7 @@ import com.example.tiasakeun.data.model.SubActivity;
 import com.example.tiasakeun.data.source.DatabaseDataSource;
 import com.example.tiasakeun.ui.picker.DatePickerFragment;
 import com.example.tiasakeun.ui.picker.TimePickerFragment;
+import com.example.tiasakeun.ui.view.DetailActActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
@@ -292,7 +294,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
 
                                 subActivities.clear();
-                                subActivities.addAll(databaseDataSource.getSubActivities(subActivity.getActivityId()));
+                                subActivities.addAll(databaseDataSource.getSubActivitiesByActivityId(subActivity.getActivityId()));
                                 notifyDataSetChanged();
 
                                 dialog.dismiss();
@@ -307,6 +309,16 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                     }
                 });
                 return true;
+            }
+        });
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), DetailActActivity.class);
+                intent.putExtra("SUB_ACTIVITY_ID", subActivity.getId());
+                intent.putExtra("ACTIVITY_ID", subActivity.getActivityId());
+                view.getContext().startActivity(intent);
             }
         });
     }

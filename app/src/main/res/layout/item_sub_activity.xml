@@ -17,6 +17,7 @@
         app:tint="@color/accent_blue"/>
 
     <LinearLayout
+        android:id="@+id/llSubActivity"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"

@@ -91,7 +91,7 @@ public class DatabaseDataSource {
         return  activities;
     }
 
-    public ArrayList<SubActivity> getSubActivities(long activityId) {
+    public ArrayList<SubActivity> getSubActivitiesByActivityId(long activityId) {
         ArrayList<SubActivity> subActivities = new ArrayList<>();
         /**
          * Ambil data
@@ -141,6 +141,47 @@ public class DatabaseDataSource {
         }
         cursor.close();
         return subActivities;
+    }
+
+    public SubActivity getSubActivityById(long id) {
+        SubActivity subActivity = new SubActivity();
+        String query = "Select * FROM " + SubActivityEntry.TABLE_NAME + " WHERE " + SubActivityEntry._ID + " = " + id;
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                subActivity.setId(cursor.getLong(0));
+                subActivity.setActivityId(cursor.getInt(1));
+                subActivity.setScheduleId(cursor.getLong(2));
+                subActivity.setTitle(cursor.getString(3));
+                subActivity.setTargetValue(cursor.getInt(4));
+                subActivity.setDateActivity(cursor.getString(5));
+                subActivity.setNotification(cursor.getInt(6));
+                subActivity.setIsCompleted(cursor.getInt(7));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        return subActivity;
+    }
+
+    public String getCategoryTypeById(long activityId) {
+        String categoryType = "";
+
+        String query = "Select category FROM " + TypeEntry.TABLE_NAME +
+                " INNER JOIN " + ActivityEntry.TABLE_NAME +
+                " ON " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry.COLUMN_TYPE_ID;
+
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                categoryType = cursor.getString(0);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        return categoryType;
     }
 
 
