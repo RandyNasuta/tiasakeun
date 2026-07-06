@@ -59,7 +59,7 @@ public class DatabaseDataSource {
         return database.insert(SubActivityEntry.TABLE_NAME, null, values);
     }
 
-    public long createActivityLog(long activityId, int value, String date) {
+    public long createLogActivity(long activityId, int value, String date) {
         ContentValues values = new ContentValues();
         values.put(ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID, activityId);
         values.put(ActivityLogEntry.COLUMN_VALUE, value);
@@ -170,7 +170,8 @@ public class DatabaseDataSource {
 
         String query = "Select category FROM " + TypeEntry.TABLE_NAME +
                 " INNER JOIN " + ActivityEntry.TABLE_NAME +
-                " ON " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry.COLUMN_TYPE_ID;
+                " ON " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry.COLUMN_TYPE_ID + " " +
+                "WHERE " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID + " = " + activityId;
 
         Cursor cursor = database.rawQuery(query, null);
 
@@ -233,6 +234,14 @@ public class DatabaseDataSource {
         values.put(SubActivityEntry.COLUMN_DATE_ACTIVITY, dateActivity);
         values.put(SubActivityEntry.COLUMN_NOTIFICATION, notification);
 
+        String whereClause = SubActivityEntry._ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+        return database.update(SubActivityEntry.TABLE_NAME, values, whereClause, whereArgs);
+    }
+
+    public long updateCompletedSubActivity(long id) {
+        ContentValues values = new ContentValues();
+        values.put(SubActivityEntry.COLUMN_IS_COMPLETED, 1);
         String whereClause = SubActivityEntry._ID + " = ?";
         String[] whereArgs = {String.valueOf(id)};
         return database.update(SubActivityEntry.TABLE_NAME, values, whereClause, whereArgs);
