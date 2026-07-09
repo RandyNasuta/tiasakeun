@@ -49,7 +49,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:visibility="visible">
+                    android:visibility="gone">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -138,7 +138,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:visibility="gone">
+                    android:visibility="visible">
 
                     <FrameLayout
                         android:layout_width="match_parent"
@@ -149,10 +149,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            app:indicatorSize="180dp"
-                            app:trackThickness="14dp"
+                            app:indicatorSize="220dp"
+                            app:trackThickness="12dp"
                             app:trackCornerRadius="7dp"
                             android:max="100"
+                            android:indeterminate="false"
                             android:progress="100"
                             app:indicatorColor="@color/accent_blue"
                             app:trackColor="#E0E0E0"/>
@@ -163,7 +164,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:text="12:00"
-                            android:textSize="40sp"
+                            android:textSize="32sp"
                             android:textStyle="bold"
                             android:textColor="@color/primary_text"/>
                     </FrameLayout>
@@ -199,10 +200,12 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSaveTimeLog"
                         style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center"
                         android:text="@string/save_time"
-                        android:textColor="@color/accent_blue"/>
+                        android:textColor="@color/window_background"
+                        android:backgroundTint="@color/accent_blue"/>
                 </LinearLayout>
 
             </LinearLayout>

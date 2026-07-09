@@ -185,7 +185,6 @@ public class DatabaseDataSource {
         return categoryType;
     }
 
-
     public ArrayList<Type> getAllTypes() {
         ArrayList<Type> types = new ArrayList<>();
         String query = "SELECT _id, category, unit_name FROM " + TypeEntry.TABLE_NAME;
@@ -212,6 +211,23 @@ public class DatabaseDataSource {
         }
         cursor.close();
         return schedules;
+    }
+
+    public int getValueProgress(long id) {
+        int progress = 0;
+        String query = "Select " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + " FROM " + ActivityLogEntry.TABLE_NAME +
+                " INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
+                SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id;
+
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                progress = cursor.getInt(0);
+            } while (cursor.moveToNext());
+        }
+
+        return progress;
     }
 
     public Schedule getScheduleByType(String type) {

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -99,12 +100,29 @@ public class DetailActActivity extends AppCompatActivity {
         subActivities.addAll(db.getSubActivitiesByActivityId(activityId));
         subActivity = db.getSubActivityById(subActivityId);
         categoryType = db.getCategoryTypeById(activityId);
+
+        //Masukkan data ke spinner dan progress sub activity
+        spSubActivity.setText(subActivity.getTitle());
+        if (categoryType.equals("Waktu")) {
+            cpTimber.setMax(subActivity.getTargetValue());
+            cpTimber.setProgress(db.getValueProgress(subActivityId));
+
+            //Tampilkan data waktu ke timer
+            int totalSeconds = cpTimber.getProgress() * 60;
+            int hh = totalSeconds / 3600;
+            int mm = (totalSeconds % 3600) / 60;
+            int ss = totalSeconds % 60;
+            String timerView = String.format("%02d:%02d:%02d", hh, mm, ss);
+            tvTimer.setText(timerView);
+        } else {
+
+        }
+
         db.close();
 
-        Log.i(TAG, "subActivities: " + subActivities);
 
-        //Masukkan data ke spinner sub activity
-        spSubActivity.setText(subActivity.getTitle());
+
+
 
         ArrayList<String> subActivityTitles = new ArrayList<>();
         for (SubActivity data : subActivities) {
@@ -122,6 +140,17 @@ public class DetailActActivity extends AppCompatActivity {
             llTimer.setVisibility(View.GONE);
             llQuantity.setVisibility(View.VISIBLE);
         }
+
+        spSubActivity.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if (categoryType.equals("Waktu")) {
+
+                } else {
+
+                }
+            }
+        });
     }
 
 
