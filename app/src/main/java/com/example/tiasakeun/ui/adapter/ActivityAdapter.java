@@ -17,6 +17,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -73,6 +74,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
         databaseDataSource.open();
         subActivities = databaseDataSource.getSubActivitiesByActivityId(activity.getId());
+        String category = databaseDataSource.getTypeCategory(activity.getId());
         databaseDataSource.close();
 
         subActivityAdapter = new SubActivityAdapter(subActivities, context);
@@ -104,6 +106,21 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                 MaterialCheckBox cbSchedule = dialogView.findViewById(R.id.cbSchedule);
                 MaterialButton btnDateSubActivity = dialogView.findViewById(R.id.btnDateSubActivity);
                 MaterialButton btnTimeSubActivity = dialogView.findViewById(R.id.btnTimeSubActivity);
+                LinearLayout llTargetValueQuantity = dialogView.findViewById(R.id.llTargetValueQuantity);
+                LinearLayout llTargetValueTime = dialogView.findViewById(R.id.llTargetValueTime);
+                TimePicker tpSpinner = dialogView.findViewById(R.id.tpSpinner);
+                tpSpinner.setIs24HourView(true);
+                tpSpinner.setHour(0);
+                tpSpinner.setMinute(0);
+
+                //Atur kategori dari target aktivitas
+                if (category.equals("Jumlah")) {
+                    llTargetValueQuantity.setVisibility(VISIBLE);
+                    llTargetValueTime.setVisibility(GONE);
+                } else {
+                    llTargetValueQuantity.setVisibility(GONE);
+                    llTargetValueTime.setVisibility(VISIBLE);
+                }
 
                 ArrayAdapter<Schedule> scheduleAdapter = new ArrayAdapter<>(context.getApplicationContext(), androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, scheduleTypes);
                 spinnerSchedule.setAdapter(scheduleAdapter);

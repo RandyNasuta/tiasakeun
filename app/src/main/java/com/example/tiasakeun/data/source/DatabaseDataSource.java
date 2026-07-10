@@ -241,6 +241,22 @@ public class DatabaseDataSource {
         return schedule;
     }
 
+    public String getTypeCategory(long activityId) {
+        String category = "";
+        String query = "SELECT " + TypeEntry.TABLE_NAME + "." + TypeEntry.COLUMN_CATEGORY + " FROM " + TypeEntry.TABLE_NAME + " " +
+                        "INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + ActivityEntry.TABLE_NAME + "." + ActivityEntry.COLUMN_TYPE_ID + " = " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID + " " +
+                        "WHERE " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID + " = " + activityId;
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                category = cursor.getString(0);
+            } while (cursor.moveToNext());
+        }
+
+        return category;
+    }
+
     //UPDATE
     public long updateSubActivity(long id, long ScheduleId, String title, int targetValue, String dateActivity, int notification) {
         ContentValues values = new ContentValues();
