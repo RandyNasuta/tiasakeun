@@ -113,6 +113,10 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                 tpSpinner.setHour(0);
                 tpSpinner.setMinute(0);
 
+                spinnerScheduleLayout.setVisibility(GONE);
+                btnTimeSubActivity.setVisibility(GONE);
+                btnDateSubActivity.setVisibility(GONE);
+
                 //Atur kategori dari target aktivitas
                 if (category.equals("Jumlah")) {
                     llTargetValueQuantity.setVisibility(VISIBLE);
@@ -239,18 +243,34 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                         //Validasi semua input data yang penting harus di isi
                         //Jika field Judul, tipe, nilai, dan satuannya kosong, maka munculkan error
                         String title = etSubActivityTitle.getText().toString().trim();
-                        String total = etTotal.getText().toString().trim();
+
 
                         boolean isScheduleChecked = cbSchedule.isChecked();
                         boolean isScheduleValid = !isScheduleChecked || (selectedSchedule[0] != null && sYear[0] != 0 && sHour[0] != 0);
 
-                        if (title.isEmpty() || total.isEmpty() || !isScheduleValid) {
-                            if (title.isEmpty()) {
-                                etSubActivityTitle.setError("Tidak boleh kosong");
+                        if (category.equals("Jumlah")) {
+                            String total = etTotal.getText().toString().trim();
+                            if (title.isEmpty() || total.isEmpty() || !isScheduleValid) {
+                                if (title.isEmpty()) {
+                                    etSubActivityTitle.setError("Tidak boleh kosong");
+                                }
+                                if (total.isEmpty()) {
+                                    etTotal.setError("Tidak boleh kosong");
+                                }
+                                Toast.makeText(context.getApplicationContext(), "Mohon lengkapi data", Toast.LENGTH_SHORT).show();
+                                return;
                             }
-                            Toast.makeText(context.getApplicationContext(), "Mohon lengkapi data", Toast.LENGTH_SHORT).show();
-                            return;
+                        } else {
+                            int checkTargetValue = tpSpinner.getHour() * 60 + tpSpinner.getMinute();
+                            if (title.isEmpty() || checkTargetValue == 0 || !isScheduleValid) {
+                                if (title.isEmpty()) {
+                                    etSubActivityTitle.setError("Tidak boleh kosong");
+                                }
+                                Toast.makeText(context.getApplicationContext(), "Mohon lengkapi data", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
                         }
+
 
                         String formattedDateTimeActivity;
 
@@ -272,7 +292,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                                     activity.getId(),
                                     scheduleChecked ? selectedSchedule[0].getId() : 0,
                                     title,
-                                    Integer.parseInt(etTotal.getText().toString()),
+                                    category.equals("Jumlah") ? Integer.parseInt(etTotal.getText().toString()) : tpSpinner.getHour() * 60 + tpSpinner.getMinute(),
                                     formattedDateTimeActivity,
                                     scheduleChecked ? 1 : 0,
                                     0

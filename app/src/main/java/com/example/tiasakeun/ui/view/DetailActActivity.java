@@ -102,16 +102,26 @@ public class DetailActActivity extends AppCompatActivity {
         categoryType = db.getCategoryTypeById(activityId);
 
         //Masukkan data ke spinner dan progress sub activity
-        spSubActivity.setText(subActivity.getTitle());
+        spSubActivity.setText(subActivity.getTitle(), false);
         if (categoryType.equals("Waktu")) {
-            cpTimber.setMax(subActivity.getTargetValue());
-            cpTimber.setProgress(db.getValueProgress(subActivityId));
+            int targetMinutes = subActivity.getTargetValue();
+            int targetInSeconds = targetMinutes * 60;
+
+            cpTimber.setMax(targetInSeconds);
+
+            int progressInSeconds = db.getValueProgress(subActivityId);
+            cpTimber.setProgress(progressInSeconds);
+
+            //Cegah waktu menjadi minus
+            int secondsRemaining = targetInSeconds - progressInSeconds;
+            if (secondsRemaining < 0) {
+                secondsRemaining = 0;
+            }
 
             //Tampilkan data waktu ke timer
-            int totalSeconds = cpTimber.getProgress() * 60;
-            int hh = totalSeconds / 3600;
-            int mm = (totalSeconds % 3600) / 60;
-            int ss = totalSeconds % 60;
+            int hh = secondsRemaining / 3600;
+            int mm = (secondsRemaining % 3600) / 60;
+            int ss = secondsRemaining % 60;
             String timerView = String.format("%02d:%02d:%02d", hh, mm, ss);
             tvTimer.setText(timerView);
         } else {
