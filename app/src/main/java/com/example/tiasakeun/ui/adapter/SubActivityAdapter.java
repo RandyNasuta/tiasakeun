@@ -13,7 +13,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -65,7 +67,12 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
     public void onBindViewHolder(@NonNull SubActivityAdapter.ViewHolder holder, int position) {
         SubActivity subActivity = subActivities.get(position);
         holder.tvSubTitle.setText(subActivity.getTitle());
-        holder.tvSubProgress.setText(String.format("%s / %s %s", String.valueOf(subActivity.getCurrentValue()), String.valueOf(subActivity.getTargetValue()), subActivity.getUnitName()));
+        holder.tvSubProgress.setText(String.format("%s / %s %s", String.valueOf(subActivity.getCurrentValue() % 3600 / 60), String.valueOf(subActivity.getTargetValue() % 3600 / 60), subActivity.getUnitName()));
+
+
+        databaseDataSource.open();
+        String category = databaseDataSource.getTypeCategory(subActivity.getActivityId());
+        databaseDataSource.close();
 
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -92,6 +99,27 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                 MaterialCheckBox cbSchedule = dialogView.findViewById(R.id.cbSchedule);
                 MaterialButton btnDateSubActivity = dialogView.findViewById(R.id.btnDateSubActivity);
                 MaterialButton btnTimeSubActivity = dialogView.findViewById(R.id.btnTimeSubActivity);
+                LinearLayout llTargetValueQuantity = dialogView.findViewById(R.id.llTargetValueQuantity);
+                LinearLayout llTargetValueTime = dialogView.findViewById(R.id.llTargetValueTime);
+                TimePicker tpSpinner = dialogView.findViewById(R.id.tpSpinner);
+                tpSpinner.setIs24HourView(true);
+
+                Log.i(TAG, "onLongClick: getTargetValue: " + subActivity.getTargetValue());
+                long tempHour = subActivity.getTargetValue() / 3600;
+                long tempMinute = (subActivity.getTargetValue() % 3600) / 60;
+
+                Log.i(TAG, "onLongClick: tempHour: " + tempHour + " | tempMinute: " + tempMinute);
+                tpSpinner.setHour((int)tempHour);
+                tpSpinner.setMinute((int)tempMinute);
+
+                //Atur kategori dari target aktivitas
+                if (category.equals("Jumlah")) {
+                    llTargetValueQuantity.setVisibility(VISIBLE);
+                    llTargetValueTime.setVisibility(GONE);
+                } else {
+                    llTargetValueQuantity.setVisibility(GONE);
+                    llTargetValueTime.setVisibility(VISIBLE);
+                }
 
                 ArrayAdapter<Schedule> scheduleAdapter = new ArrayAdapter<>(context.getApplicationContext(), androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, scheduleTypes);
                 spinnerSchedule.setAdapter(scheduleAdapter);
@@ -246,23 +274,31 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                         //Validasi semua input data yang penting harus di isi
                         //Jika field Judul, tipe, nilai, dan satuannya kosong, maka munculkan error
                         String title = etSubActivityTitle.getText().toString().trim();
-                        String total = etTotal.getText().toString().trim();
 
                         boolean isScheduleChecked = cbSchedule.isChecked();
                         boolean isScheduleValid = !isScheduleChecked || (selectedSchedule[0] != null && sYear[0] != 0 && sHour[0] != 0);
 
-                        if (title.isEmpty() || total.isEmpty() || !isScheduleValid) {
-                            Log.e(TAG, "validasi: title is empty: " + title.isEmpty());
-                            Log.e(TAG, "validasi: total is empty: " + total.isEmpty());
-                            Log.e(TAG, "validasi: schedule is not valid: " + !isScheduleValid);
-
-                            if (title.isEmpty()) {
-                                etSubActivityTitle.setError("Tidak boleh kosong");
-                            } else if (total.isEmpty()) {
-                                etTotal.setError("Tidak boleh kosong");
+                        if (category.equals("Jumlah")) {
+                            String total = etTotal.getText().toString().trim();
+                            if (title.isEmpty() || total.isEmpty() || !isScheduleValid) {
+                                if (title.isEmpty()) {
+                                    etSubActivityTitle.setError("Tidak boleh kosong");
+                                }
+                                if (total.isEmpty()) {
+                                    etTotal.setError("Tidak boleh kosong");
+                                }
+                                Toast.makeText(context.getApplicationContext(), "Mohon lengkapi data", Toast.LENGTH_SHORT).show();
+                                return;
                             }
-                            Toast.makeText(context.getApplicationContext(), "Mohon lengkapi data", Toast.LENGTH_SHORT).show();
-                            return;
+                        } else {
+                            int checkTargetValue = tpSpinner.getHour() * 60 + tpSpinner.getMinute();
+                            if (title.isEmpty() || checkTargetValue == 0 || !isScheduleValid) {
+                                if (title.isEmpty()) {
+                                    etSubActivityTitle.setError("Tidak boleh kosong");
+                                }
+                                Toast.makeText(context.getApplicationContext(), "Mohon lengkapi data", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
                         }
 
                         String formattedDateTimeActivity;
@@ -285,7 +321,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                                     subActivity.getId(),
                                     scheduleChecked ? selectedSchedule[0].getId() : 0,
                                     title,
-                                    Integer.parseInt(etTotal.getText().toString()),
+                                    category.equals("Jumlah") ? Integer.parseInt(etTotal.getText().toString()) : tpSpinner.getHour() * 3600 + tpSpinner.getMinute() * 60,
                                     formattedDateTimeActivity,
                                     scheduleChecked ? 1 : 0
                             );

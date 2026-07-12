@@ -5,7 +5,7 @@ public class SubActivity {
     private long activityId;
     private long scheduleId;;
     private String title;
-    private int targetValue;
+    private long targetValue;
     private String dateActivity;
     private int notification;
     private int isCompleted;
@@ -49,11 +49,11 @@ public class SubActivity {
         this.title = title;
     }
 
-    public int getTargetValue() {
+    public long getTargetValue() {
         return targetValue;
     }
 
-    public void setTargetValue(int targetValue) {
+    public void setTargetValue(long targetValue) {
         this.targetValue = targetValue;
     }
 

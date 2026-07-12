@@ -110,6 +110,7 @@ public class DatabaseDataSource {
                 SubActivityEntry.COLUMN_TARGET_VALUE + ", " +
                 SubActivityEntry.COLUMN_NOTIFICATION + ", " +
                 SubActivityEntry.COLUMN_DATE_ACTIVITY + ", " +
+                SubActivityEntry.COLUMN_TARGET_VALUE + ", " +
                 SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_ACTIVITY_ID + ", " +
                 ScheduleEntry.TABLE_NAME + "." + ScheduleEntry.COLUMN_TYPE + ", " +
                 TypeEntry.TABLE_NAME + "." +  TypeEntry.COLUMN_UNIT_NAME + ", " +
@@ -131,6 +132,7 @@ public class DatabaseDataSource {
                 subActivity.setActivityId(cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_ACTIVITY_ID)));
                 subActivity.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_TITLE)));
                 subActivity.setDateActivity(cursor.getString(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_DATE_ACTIVITY)));
+                subActivity.setTargetValue(cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_TARGET_VALUE)));
                 subActivity.setNotification(cursor.getInt(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_NOTIFICATION)));
                 subActivity.setScheduleType(cursor.getString(cursor.getColumnIndexOrThrow(ScheduleEntry.COLUMN_TYPE)));
                 subActivity.setTargetValue(cursor.getInt(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_TARGET_VALUE)));

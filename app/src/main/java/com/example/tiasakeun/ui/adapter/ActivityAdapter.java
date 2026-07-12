@@ -85,7 +85,6 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
             public void onClick(View view) {
                 final Schedule[] selectedSchedule = {null};
                 final int[] sYear = {0}, sMonth = {0}, sDay = {0}, sHour = {0}, sMinute = {0};
-                final int[] icon = {0};
 
                 databaseDataSource.open();
                 ArrayList<Schedule> scheduleTypes = databaseDataSource.getAllSchedules();
@@ -271,7 +270,6 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                             }
                         }
 
-
                         String formattedDateTimeActivity;
 
                         if (isScheduleChecked) {
@@ -292,7 +290,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                                     activity.getId(),
                                     scheduleChecked ? selectedSchedule[0].getId() : 0,
                                     title,
-                                    category.equals("Jumlah") ? Integer.parseInt(etTotal.getText().toString()) : tpSpinner.getHour() * 60 + tpSpinner.getMinute(),
+                                    category.equals("Jumlah") ? Integer.parseInt(etTotal.getText().toString()) : tpSpinner.getHour() * 3600 + tpSpinner.getMinute() * 60,
                                     formattedDateTimeActivity,
                                     scheduleChecked ? 1 : 0,
                                     0
@@ -300,10 +298,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
                             if (result != -1) {
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
-
-                                databaseDataSource.open();
                                 ArrayList<SubActivity> newSubActivities = databaseDataSource.getSubActivitiesByActivityId(activity.getId());
-                                databaseDataSource.close();
 
                                 subActivities.clear();
                                 subActivities.addAll(newSubActivities);
