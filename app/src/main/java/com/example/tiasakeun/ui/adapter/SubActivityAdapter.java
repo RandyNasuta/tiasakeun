@@ -104,7 +104,6 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                 TimePicker tpSpinner = dialogView.findViewById(R.id.tpSpinner);
                 tpSpinner.setIs24HourView(true);
 
-                Log.i(TAG, "onLongClick: getTargetValue: " + subActivity.getTargetValue());
                 long tempHour = subActivity.getTargetValue() / 3600;
                 long tempMinute = (subActivity.getTargetValue() % 3600) / 60;
 

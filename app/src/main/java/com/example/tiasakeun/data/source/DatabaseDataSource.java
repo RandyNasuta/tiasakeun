@@ -59,9 +59,9 @@ public class DatabaseDataSource {
         return database.insert(SubActivityEntry.TABLE_NAME, null, values);
     }
 
-    public long createLogActivity(long activityId, int value, String date) {
+    public long createLogActivity(long subActivityId, int value, String date) {
         ContentValues values = new ContentValues();
-        values.put(ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID, activityId);
+        values.put(ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID, subActivityId);
         values.put(ActivityLogEntry.COLUMN_VALUE, value);
         values.put(ActivityLogEntry.COLUMN_LOG_DATE, date);
         return database.insert(ActivityLogEntry.TABLE_NAME, null, values);
@@ -282,4 +282,10 @@ public class DatabaseDataSource {
     }
 
     //DELETE
+    public boolean deleteActivityLogs(long subActivityId) {
+        String whereClause = ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ?";
+        String[] whereArgs = {String.valueOf(subActivityId)};
+        int rowsAffected = database.delete(ActivityLogEntry.TABLE_NAME, whereClause, whereArgs);
+        return rowsAffected > 0;
+    }
 }

@@ -192,7 +192,24 @@ public class DetailActActivity extends AppCompatActivity {
                 builder.setPositiveButton("Ya", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        try {
+                            db.open();
+                            db.deleteActivityLogs(subActivityId);
+                        } catch (Exception e) {
+                            Log.e(TAG, "onClick: Error reset time: " + e.getMessage());
+                        } finally {
+                            db.close();
+                        }
 
+                        timeLeftInMillis = subActivity.getTargetValue() * 1000L;
+                        cpTimber.setProgress(0);
+
+                        long hh = subActivity.getTargetValue() / 3600;
+                        long mm = (subActivity.getTargetValue() % 3600) / 60;
+                        long ss = subActivity.getTargetValue() % 60;
+                        String timerView = String.format("%02d:%02d:%02d", hh, mm, ss);
+                        tvTimer.setText(timerView);
+                        elapsedTimeInSeconds = 0;
                     }
                 });
 
