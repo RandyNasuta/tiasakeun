@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -27,7 +28,9 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
 public class DetailActActivity extends AppCompatActivity {
@@ -118,8 +121,9 @@ public class DetailActActivity extends AppCompatActivity {
             long targetInSeconds= subActivity.getTargetValue();
             cpTimber.setMax((int)targetInSeconds);
 
-            int progressInSeconds = db.getValueProgress(subActivityId);
-            cpTimber.setProgress(progressInSeconds);
+            long progressInSeconds = db.getValueProgress(subActivityId);
+            Log.i(TAG, "onCreate: progress in seconds: " + progressInSeconds);
+            cpTimber.setProgress( (int) progressInSeconds);
 
             //Cegah waktu menjadi minus
             long secondsRemaining = targetInSeconds - progressInSeconds;
@@ -224,6 +228,19 @@ public class DetailActActivity extends AppCompatActivity {
                 resetDialog.show();
             }
         });
+
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (isTimerRunning) {
+                    Toast.makeText(DetailActActivity.this, "Tidak bisa keluar karena waktu berjalan", Toast.LENGTH_SHORT).show();
+                } else {
+                    finish();
+                }
+            }
+        };
+
+        getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
     private void onStartTimer() {
@@ -262,8 +279,41 @@ public class DetailActActivity extends AppCompatActivity {
         if (countDownTimer != null) {
             countDownTimer.cancel();
         }
+
+        if (elapsedTimeInSeconds > 0) {
+            try {
+                db.open();
+                String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+                long createLogActivity = db.createLogActivity(subActivityId, elapsedTimeInSeconds, currentDate);
+
+                if (createLogActivity != -1) {
+                    elapsedTimeInSeconds = 0;
+                    Log.i(TAG, "onPauseTimer: Data pause berhasil disimpan");
+                } else {
+                    Toast.makeText(this, "Gagal menyimpan data", Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "onPauseTimer: error - " + e.getMessage());
+            } finally {
+                db.close();
+            }
+        }
+
+
         isTimerRunning = false;
         btnPlayPauseTimer.setIconResource(R.drawable.outline_autoplay_24);
         btnResetTimer.setEnabled(true);
+    }
+
+    @Override
+    protected void onPause() {
+        onPauseTimer();
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        onPauseTimer();
+        super.onStop();
     }
 }

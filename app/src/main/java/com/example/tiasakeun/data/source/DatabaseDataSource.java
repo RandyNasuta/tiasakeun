@@ -59,7 +59,7 @@ public class DatabaseDataSource {
         return database.insert(SubActivityEntry.TABLE_NAME, null, values);
     }
 
-    public long createLogActivity(long subActivityId, int value, String date) {
+    public long createLogActivity(long subActivityId, long value, String date) {
         ContentValues values = new ContentValues();
         values.put(ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID, subActivityId);
         values.put(ActivityLogEntry.COLUMN_VALUE, value);
@@ -217,7 +217,7 @@ public class DatabaseDataSource {
 
     public int getValueProgress(long id) {
         int progress = 0;
-        String query = "Select " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + " FROM " + ActivityLogEntry.TABLE_NAME +
+        String query = "Select SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ") FROM " + ActivityLogEntry.TABLE_NAME +
                 " INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
                 SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id;
 
