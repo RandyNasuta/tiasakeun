@@ -23,4 +23,5 @@
     <string name="update">Ubah</string>
     <string name="finish">Selesai</string>
     <string name="save_time">Simpan waktu</string>
+    <string name="data_activity_does_not_exist">Tidak ada data aktivitas</string>
 </resources>

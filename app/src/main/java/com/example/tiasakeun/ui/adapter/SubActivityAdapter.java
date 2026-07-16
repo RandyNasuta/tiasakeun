@@ -46,14 +46,14 @@ import java.util.Objects;
 public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.ViewHolder> {
 
     private ArrayList<SubActivity> subActivities;
-    private DatabaseDataSource databaseDataSource = null;
+    private DatabaseDataSource db = null;
     private final String TAG = "SubActivityAdapter";
     private Context context;
 
     public SubActivityAdapter(ArrayList<SubActivity> subActivities, Context context) {
         this.subActivities = subActivities;
         this.context = context;
-        databaseDataSource = new DatabaseDataSource(this.context);
+        db = new DatabaseDataSource(this.context);
     }
 
     @NonNull
@@ -70,9 +70,9 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
         holder.tvSubProgress.setText(String.format("%s / %s %s", String.valueOf(subActivity.getCurrentValue() % 3600 / 60), String.valueOf(subActivity.getTargetValue() % 3600 / 60), subActivity.getUnitName()));
 
 
-        databaseDataSource.open();
-        String category = databaseDataSource.getTypeCategory(subActivity.getActivityId());
-        databaseDataSource.close();
+        db.open();
+        String category = db.getTypeCategory(subActivity.getActivityId());
+        db.close();
 
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -80,9 +80,9 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                 final Schedule[] selectedSchedule = {null};
                 final int[] sYear = {0}, sMonth = {0}, sDay = {0}, sHour = {0}, sMinute = {0};
 
-                databaseDataSource.open();
-                ArrayList<Schedule> scheduleTypes = databaseDataSource.getAllSchedules();
-                databaseDataSource.close();
+                db.open();
+                ArrayList<Schedule> scheduleTypes = db.getAllSchedules();
+                db.close();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
 
@@ -146,9 +146,9 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
 
                     if (subActivity.getNotification() == 1) {
                         cbSchedule.setChecked(true);
-                        databaseDataSource.open();
-                        selectedSchedule[0] = (Schedule) databaseDataSource.getScheduleByType(subActivity.getScheduleType());
-                        databaseDataSource.close();
+                        db.open();
+                        selectedSchedule[0] = (Schedule) db.getScheduleByType(subActivity.getScheduleType());
+                        db.close();
                         sYear[0] = Integer.parseInt(dateFormat[0].split("/")[2]);
                         sHour[0] = Integer.parseInt(dateFormat[1].split(":")[0]);
                     }
@@ -312,11 +312,11 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                                     current.get(Calendar.YEAR), current.get(Calendar.MONTH) + 1, current.get(Calendar.DAY_OF_MONTH));
                         }
 
-                        databaseDataSource.open();
+                        db.open();
 
                         try {
                             boolean scheduleChecked = cbSchedule.isChecked();
-                            long result = databaseDataSource.updateSubActivity(
+                            long result = db.updateSubActivity(
                                     subActivity.getId(),
                                     scheduleChecked ? selectedSchedule[0].getId() : 0,
                                     title,
@@ -329,7 +329,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
 
                                 subActivities.clear();
-                                subActivities.addAll(databaseDataSource.getSubActivitiesByActivityId(subActivity.getActivityId()));
+                                subActivities.addAll(db.getSubActivitiesByActivityId(subActivity.getActivityId()));
                                 notifyDataSetChanged();
 
                                 dialog.dismiss();
@@ -339,7 +339,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                         } catch (Exception e) {
                             Log.e(TAG, "error update sub activity: " + e.getMessage());
                         } finally {
-                            databaseDataSource.close();
+                            db.close();
                         }
                     }
                 });

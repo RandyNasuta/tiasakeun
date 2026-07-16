@@ -122,14 +122,6 @@
                             android:layout_width="0dp"
                             android:layout_height="0dp"
                             android:layout_weight="1"/>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnFinish"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/finish"
-                            android:backgroundTint="@color/accent_blue"
-                            android:layout_gravity="center"/>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -196,17 +188,25 @@
                             app:iconGravity="textStart"
                             app:iconTint="@color/white"/>
                     </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnSaveTimeLog"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="@string/save_time"
-                        android:textColor="@color/window_background"
-                        android:backgroundTint="@color/accent_blue"/>
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvNoSubActivity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/data_activity_does_not_exist"
+                    android:textSize="16sp"
+                    android:textColor="@color/primary_text"
+                    android:visibility="gone"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFinish"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/finish"
+                    android:backgroundTint="@color/accent_blue"
+                    android:layout_gravity="center"/>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

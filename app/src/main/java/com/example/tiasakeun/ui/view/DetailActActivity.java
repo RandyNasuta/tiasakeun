@@ -32,8 +32,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class DetailActActivity extends AppCompatActivity {
+    private final String TAG = "DetailActActivity";
 
     //Variabel view
     private MaterialAutoCompleteTextView spSubActivity;
@@ -48,13 +50,12 @@ public class DetailActActivity extends AppCompatActivity {
     private MaterialButton btnFinish;
     private MaterialButton btnResetTimer;
     private MaterialButton btnPlayPauseTimer;
-    private MaterialButton btnSaveTimeLog;
     private CircularProgressIndicator cpTimber;
-    private long subActivityId = 0L;
-    private long activityId = 0L;
-    private final String TAG = "DetailActActivity";
+    private TextView tvNoSubActivity;
 
     //Variabel data
+    private long subActivityId = 0L;
+    private long activityId = 0L;
     private ArrayList<SubActivity> subActivities = new ArrayList<>();
     private SubActivity subActivity = null;
     private String categoryType;
@@ -62,7 +63,13 @@ public class DetailActActivity extends AppCompatActivity {
     //Variabel untuk mengatur timer
     private CountDownTimer countDownTimer = null;
     private boolean isTimerRunning = false;
+    /**
+     * timeLeftInMillis -> waktu yang tersisa untuk selesai
+     */
     private long timeLeftInMillis = 0L;
+    /**
+     * elapsedTimeInSeconds -> waktu yang sudah berjalan
+     */
     private long elapsedTimeInSeconds = 0L;
 
 
@@ -82,8 +89,8 @@ public class DetailActActivity extends AppCompatActivity {
         btnFinish = findViewById(R.id.btnFinish);
         btnResetTimer = findViewById(R.id.btnResetTimer);
         btnPlayPauseTimer = findViewById(R.id.btnPlayPauseTimer);
-        btnSaveTimeLog = findViewById(R.id.btnSaveTimeLog);
         cpTimber = findViewById(R.id.cpTimber);
+        tvNoSubActivity = findViewById(R.id.tvNoSubActivity);
     }
 
     @Override
@@ -101,57 +108,33 @@ public class DetailActActivity extends AppCompatActivity {
 
         initView();
 
-        Intent intent = getIntent();
-
-        if (intent != null) {
-            subActivityId = intent.getLongExtra("SUB_ACTIVITY_ID", 0L);
-            activityId = intent.getLongExtra("ACTIVITY_ID", 0L);
-            Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
-        }
+        subActivityId = getIntent().getLongExtra("SUB_ACTIVITY_ID", 0L);
+        activityId = getIntent().getLongExtra("ACTIVITY_ID", 0L);
+        Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
 
         db.open();
         subActivities.addAll(db.getSubActivitiesByActivityId(activityId));
+
+        if (subActivities.isEmpty()) {
+            llTimer.setVisibility(View.GONE);
+            llQuantity.setVisibility(View.GONE);
+            btnFinish.setVisibility(View.GONE);
+            tvNoSubActivity.setVisibility(View.VISIBLE);
+        } else {
+            tvNoSubActivity.setVisibility(View.GONE);
+        }
+
         subActivity = db.getSubActivityById(subActivityId);
         categoryType = db.getCategoryTypeById(activityId);
+        db.close();
 
-        //Masukkan data ke spinner dan progress sub activity
-        spSubActivity.setText(subActivity.getTitle(), false);
+        initializeSpinner();
+
         if (categoryType.equals("Waktu")) {
-            //Atur nilai max dengan second dari target value di subactivity
-            long targetInSeconds= subActivity.getTargetValue();
-            cpTimber.setMax((int)targetInSeconds);
-
-            long progressInSeconds = db.getValueProgress(subActivityId);
-            Log.i(TAG, "onCreate: progress in seconds: " + progressInSeconds);
-            cpTimber.setProgress( (int) progressInSeconds);
-
-            //Cegah waktu menjadi minus
-            long secondsRemaining = targetInSeconds - progressInSeconds;
-            if (secondsRemaining < 0) {
-                secondsRemaining = 0;
-            }
-
-            //Tampilkan data waktu ke timer
-            long hh = secondsRemaining / 3600;
-            long mm = (secondsRemaining % 3600) / 60;
-            long ss = secondsRemaining % 60;
-            String timerView = String.format("%02d:%02d:%02d", hh, mm, ss);
-            tvTimer.setText(timerView);
-
-            timeLeftInMillis = secondsRemaining * 1000L;
+            initializeTime();
         } else {
 
         }
-
-        db.close();
-
-        ArrayList<String> subActivityTitles = new ArrayList<>();
-        for (SubActivity data : subActivities) {
-            subActivityTitles.add(data.getTitle());
-        }
-        ArrayAdapter<String> subActivityArrayAdapter = new ArrayAdapter<>(DetailActActivity.this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, subActivityTitles);
-        spSubActivity.setAdapter(subActivityArrayAdapter);
-
 
         Log.i(TAG, "categoryType: " + categoryType);
         if (categoryType.equals("Waktu")) {
@@ -165,11 +148,7 @@ public class DetailActActivity extends AppCompatActivity {
         spSubActivity.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if (categoryType.equals("Waktu")) {
-
-                } else {
-
-                }
+                changeSubActivity(i);
             }
         });
 
@@ -229,6 +208,87 @@ public class DetailActActivity extends AppCompatActivity {
             }
         });
 
+        btnFinish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(DetailActActivity.this);
+
+                builder.setTitle("Konfirmasi Selesai Aktivitas");
+                builder.setMessage("Apakah anda yakin untuk mengakhiri aktivitas ini?");
+                builder.setCancelable(true);
+
+                builder.setPositiveButton("Ya", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (countDownTimer != null) {
+                            countDownTimer.cancel();
+                            isTimerRunning = false;
+                        }
+
+                        boolean isSaveSuccess = false;
+                        try {
+                            db.open();
+                            if (categoryType.equals("Waktu")) {
+                                if (elapsedTimeInSeconds > 0 ) {
+                                    String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+                                    long createLogActivity = db.createLogActivity(subActivityId, elapsedTimeInSeconds, currentDate);
+
+                                    if (createLogActivity != -1) {
+                                        elapsedTimeInSeconds = 0;
+                                    } else {
+                                        Toast.makeText(DetailActActivity.this, "Gagal menyimpan data", Toast.LENGTH_SHORT).show();
+                                        return; //Berhenti jika gagal
+                                    }
+                                }
+
+                                long updateStatus = db.updateCompletedSubActivity(subActivityId);
+                                if (updateStatus != -1) {
+                                    isSaveSuccess = true;
+                                    Toast.makeText(DetailActActivity.this, "Aktivitas berhasil diselesaikan", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(DetailActActivity.this, "Gagal menyimpan data", Toast.LENGTH_SHORT).show();
+                                }
+                            } else {
+
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "onClick: error tekan btn finish: " + e.getMessage());
+                        } finally {
+                            db.close();
+                        }
+
+                        if (isSaveSuccess) {
+                            //Lakukan perpindahan sub activity ke activity dengan indeks paling pertama
+                            //Ubah daftar subActivities
+                            //Masukkan ke dalam spinner
+                            //Pilih sub activity pertama
+                            subActivities.remove(subActivity);
+
+                            if (!subActivities.isEmpty()) {
+                                changeSubActivity(0);
+                                initializeSpinner();
+                            } else {
+                                llTimer.setVisibility(View.GONE);
+                                llQuantity.setVisibility(View.GONE);
+                                btnFinish.setVisibility(View.GONE);
+                                tvNoSubActivity.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    }
+                });
+
+                builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+
+                AlertDialog finishDialog = builder.create();
+                finishDialog.show();
+            }
+        });
+
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -241,6 +301,43 @@ public class DetailActActivity extends AppCompatActivity {
         };
 
         getOnBackPressedDispatcher().addCallback(this, callback);
+    }
+
+    private void initializeSpinner() {
+        //Masukkan data ke spinner dan progress sub activity
+        ArrayAdapter<String> subActivityArrayAdapter = new ArrayAdapter<>(
+                DetailActActivity.this,
+                androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
+                subActivities
+                        .stream()
+                        .filter(data -> data.getIsCompleted() != 1)
+                        .map(SubActivity::getTitle)
+                        .collect(Collectors.toList())
+        );
+        spSubActivity.setAdapter(subActivityArrayAdapter);
+    }
+
+    private void changeSubActivity(int i) {
+        //Cek jika item yang dipilih adalah item yang tidak sedang berjalan
+        SubActivity selectedSubActivity = subActivities.get(i);
+        if (selectedSubActivity.getId() != subActivityId) {
+            //Kategorikan berdasarkan tipe progressnya - waktu atau jumlah
+            if (categoryType.equals("Waktu")) {
+                if (isTimerRunning) {
+                    onPauseTimer(); //Lakukan, skema onPauseTimer
+                }
+
+                //Ambil data sub activity terbaru
+                subActivityId = selectedSubActivity.getId();
+                activityId = selectedSubActivity.getActivityId();
+                subActivity = selectedSubActivity;
+                Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
+
+                initializeTime();
+            } else {
+
+            }
+        }
     }
 
     private void onStartTimer() {
@@ -303,6 +400,35 @@ public class DetailActActivity extends AppCompatActivity {
         isTimerRunning = false;
         btnPlayPauseTimer.setIconResource(R.drawable.outline_autoplay_24);
         btnResetTimer.setEnabled(true);
+    }
+
+    private void initializeTime() {
+        /**
+         * targetInSeconds -> target waktu yang ingin dicapai
+         * pada suatu aktivitas dikonversi ke detik
+         */
+        db.open();
+        long targetInSeconds= subActivity.getTargetValue();
+        cpTimber.setMax((int)targetInSeconds);
+        long progressInSeconds = db.getValueProgress(subActivityId);
+
+        Log.i(TAG, "onCreate: progress in seconds: " + progressInSeconds);
+        cpTimber.setProgress( (int) progressInSeconds);
+
+        //Cegah waktu menjadi minus
+        long secondsRemaining = targetInSeconds - progressInSeconds;
+        if (secondsRemaining < 0) {
+            secondsRemaining = 0;
+        }
+
+        //Tampilkan data waktu ke timer
+        long hh = secondsRemaining / 3600;
+        long mm = (secondsRemaining % 3600) / 60;
+        long ss = secondsRemaining % 60;
+        tvTimer.setText(String.format(Locale.getDefault(), "%02d:%02d:%02d", hh, mm, ss));
+
+        timeLeftInMillis = secondsRemaining * 1000L;
+        db.close();
     }
 
     @Override

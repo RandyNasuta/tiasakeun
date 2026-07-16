@@ -46,14 +46,14 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
     private Context context;
     private final ArrayList<Activity> activityList;
-    private DatabaseDataSource databaseDataSource = null;
+    private DatabaseDataSource db = null;
     private ArrayList<SubActivity> subActivities = new ArrayList<>();
     private SubActivityAdapter subActivityAdapter = null;
 
     public ActivityAdapter(Context context, ArrayList<Activity> activities) {
         this.context = context;
         this.activityList = activities;
-        databaseDataSource = new DatabaseDataSource(context);
+        db = new DatabaseDataSource(context);
     }
 
     @NonNull
@@ -72,10 +72,10 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
         holder.rvSubActivities.setLayoutManager(new LinearLayoutManager(context));
 
-        databaseDataSource.open();
-        subActivities = databaseDataSource.getSubActivitiesByActivityId(activity.getId());
-        String category = databaseDataSource.getTypeCategory(activity.getId());
-        databaseDataSource.close();
+        db.open();
+        subActivities = db.getSubActivitiesByActivityId(activity.getId());
+        String category = db.getTypeCategory(activity.getId());
+        db.close();
 
         subActivityAdapter = new SubActivityAdapter(subActivities, context);
         holder.rvSubActivities.setAdapter(subActivityAdapter);
@@ -86,9 +86,9 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                 final Schedule[] selectedSchedule = {null};
                 final int[] sYear = {0}, sMonth = {0}, sDay = {0}, sHour = {0}, sMinute = {0};
 
-                databaseDataSource.open();
-                ArrayList<Schedule> scheduleTypes = databaseDataSource.getAllSchedules();
-                databaseDataSource.close();
+                db.open();
+                ArrayList<Schedule> scheduleTypes = db.getAllSchedules();
+                db.close();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
@@ -282,11 +282,11 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                                     current.get(Calendar.YEAR), current.get(Calendar.MONTH) + 1, current.get(Calendar.DAY_OF_MONTH));
                         }
 
-                        databaseDataSource.open();
+                        db.open();
 
                         try {
                             boolean scheduleChecked = cbSchedule.isChecked();
-                            long result = databaseDataSource.createSubActivity(
+                            long result = db.createSubActivity(
                                     activity.getId(),
                                     scheduleChecked ? selectedSchedule[0].getId() : 0,
                                     title,
@@ -298,7 +298,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
                             if (result != -1) {
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
-                                ArrayList<SubActivity> newSubActivities = databaseDataSource.getSubActivitiesByActivityId(activity.getId());
+                                ArrayList<SubActivity> newSubActivities = db.getSubActivitiesByActivityId(activity.getId());
 
                                 subActivities.clear();
                                 subActivities.addAll(newSubActivities);
@@ -312,7 +312,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                             e.printStackTrace();
                             Toast.makeText(context.getApplicationContext(), e.getMessage().toString(), Toast.LENGTH_SHORT).show();
                         } finally {
-                            databaseDataSource.close();
+                            db.close();
                         }
                     }
                 });

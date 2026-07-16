@@ -118,6 +118,4 @@ public class SubActivity {
                 ", isCompleted=" + isCompleted +
                 '}';
     }
-
-
 }

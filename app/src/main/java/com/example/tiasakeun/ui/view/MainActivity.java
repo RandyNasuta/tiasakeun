@@ -1,8 +1,5 @@
 package com.example.tiasakeun.ui.view;
 
-import static android.view.View.GONE;
-import static android.view.View.VISIBLE;
-
 import android.app.AlertDialog;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -10,11 +7,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -30,19 +25,13 @@ import com.example.tiasakeun.data.model.Type;
 import com.example.tiasakeun.data.source.DatabaseDataSource;
 import com.example.tiasakeun.ui.adapter.ActivityAdapter;
 import com.example.tiasakeun.ui.adapter.IconAdapter;
-import com.example.tiasakeun.ui.picker.DatePickerFragment;
-import com.example.tiasakeun.ui.picker.TimePickerFragment;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rVActiviy;
     private ActivityAdapter activityAdapter;
     private ArrayList<Activity> activityList = new ArrayList<>();
-    private DatabaseDataSource databaseDataSource = null;
+    private DatabaseDataSource db = null;
 
     private void initView() {
         fabAddActivity = findViewById(R.id.fabAddActivity);
@@ -60,9 +49,9 @@ public class MainActivity extends AppCompatActivity {
         rVActiviy = findViewById(R.id.rVActiviy);
         rVActiviy.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
-        databaseDataSource.open();
-        activityList.addAll(databaseDataSource.getAllActivities());
-        databaseDataSource.close();
+        db.open();
+        activityList.addAll(db.getAllActivities());
+        db.close();
 
         activityAdapter = new ActivityAdapter(MainActivity.this, activityList);
         rVActiviy.setAdapter(activityAdapter);
@@ -80,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //Inisialisasi database
-        databaseDataSource = new DatabaseDataSource(this);
+        db = new DatabaseDataSource(this);
         initView();
 
         refreshDataAct();
@@ -89,11 +78,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void refreshDataAct() {
-        if (databaseDataSource != null) {
-            databaseDataSource.open();
+        if (db != null) {
+            db.open();
             activityList.clear();
-            activityList.addAll(databaseDataSource.getAllActivities());
-            databaseDataSource.close();
+            activityList.addAll(db.getAllActivities());
+            db.close();
 
             if (activityAdapter != null) {
                 activityAdapter.notifyDataSetChanged();
@@ -118,12 +107,12 @@ public class MainActivity extends AppCompatActivity {
         final int[] icon = {0};
 
         //Panggil DatabaseDataSource
-        databaseDataSource.open();
+        db.open();
 
-        ArrayList<Type> typesUnits = databaseDataSource.getAllTypes();
-        ArrayList<Schedule> scheduleTypes = databaseDataSource.getAllSchedules();
+        ArrayList<Type> typesUnits = db.getAllTypes();
+        ArrayList<Schedule> scheduleTypes = db.getAllSchedules();
 
-        databaseDataSource.close();
+        db.close();
 
         //Builder untuk AlertDialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -205,10 +194,10 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                databaseDataSource.open();
+                db.open();
 
                 try {
-                    long result = databaseDataSource.createActivity(
+                    long result = db.createActivity(
                             1,
                             selectedType[0].getId(),
                             title,
@@ -228,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                     Toast.makeText(MainActivity.this, e.getMessage().toString(), Toast.LENGTH_SHORT).show();
                 } finally {
-                    databaseDataSource.close();
+                    db.close();
                 }
             }
         });
