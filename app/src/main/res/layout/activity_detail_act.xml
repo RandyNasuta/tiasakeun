@@ -40,7 +40,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="none"
-                        android:text="Lari Sprint"
+                        android:text="@string/sub_activity"
                         android:textColor="@color/primary_text"/>
                 </com.google.android.material.textfield.TextInputLayout>
 

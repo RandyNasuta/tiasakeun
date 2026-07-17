@@ -148,7 +148,10 @@ public class DetailActActivity extends AppCompatActivity {
         spSubActivity.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                changeSubActivity(i);
+                SubActivity selectedSubActivity = subActivities.get(i);
+                if (selectedSubActivity.getId() != subActivityId) {
+                    changeSubActivity(subActivities.get(i));
+                }
             }
         });
 
@@ -196,97 +199,93 @@ public class DetailActActivity extends AppCompatActivity {
                     }
                 });
 
-                builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                    }
-                });
+                builder.setNegativeButton("Tidak", (dialogInterface, i) ->
+                    dialogInterface.cancel()
+                );
 
                 AlertDialog resetDialog = builder.create();
                 resetDialog.show();
             }
         });
 
-        btnFinish.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(DetailActActivity.this);
+        btnFinish.setOnClickListener(view -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(DetailActActivity.this);
 
-                builder.setTitle("Konfirmasi Selesai Aktivitas");
-                builder.setMessage("Apakah anda yakin untuk mengakhiri aktivitas ini?");
-                builder.setCancelable(true);
+            builder.setTitle("Konfirmasi Selesai Aktivitas");
+            builder.setMessage("Apakah anda yakin untuk mengakhiri aktivitas ini?");
+            builder.setCancelable(true);
 
-                builder.setPositiveButton("Ya", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (countDownTimer != null) {
-                            countDownTimer.cancel();
-                            isTimerRunning = false;
-                        }
+            builder.setPositiveButton("Ya", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    if (countDownTimer != null) {
+                        countDownTimer.cancel();
+                        isTimerRunning = false;
+                    }
 
-                        boolean isSaveSuccess = false;
-                        try {
-                            db.open();
-                            if (categoryType.equals("Waktu")) {
-                                if (elapsedTimeInSeconds > 0 ) {
-                                    String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
-                                    long createLogActivity = db.createLogActivity(subActivityId, elapsedTimeInSeconds, currentDate);
+                    boolean isSaveSuccess = false;
+                    try {
+                        db.open();
+                        if (categoryType.equals("Waktu")) {
+                            if (elapsedTimeInSeconds > 0 ) {
+                                String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+                                long createLogActivity = db.createLogActivity(subActivityId, elapsedTimeInSeconds, currentDate);
 
-                                    if (createLogActivity != -1) {
-                                        elapsedTimeInSeconds = 0;
-                                    } else {
-                                        Toast.makeText(DetailActActivity.this, "Gagal menyimpan data", Toast.LENGTH_SHORT).show();
-                                        return; //Berhenti jika gagal
-                                    }
-                                }
-
-                                long updateStatus = db.updateCompletedSubActivity(subActivityId);
-                                if (updateStatus != -1) {
-                                    isSaveSuccess = true;
-                                    Toast.makeText(DetailActActivity.this, "Aktivitas berhasil diselesaikan", Toast.LENGTH_SHORT).show();
+                                if (createLogActivity != -1) {
+                                    elapsedTimeInSeconds = 0;
                                 } else {
                                     Toast.makeText(DetailActActivity.this, "Gagal menyimpan data", Toast.LENGTH_SHORT).show();
+                                    return; //Berhenti jika gagal
                                 }
-                            } else {
-
                             }
-                        } catch (Exception e) {
-                            Log.e(TAG, "onClick: error tekan btn finish: " + e.getMessage());
-                        } finally {
-                            db.close();
+
+                            long updateStatus = db.updateCompletedSubActivity(subActivityId);
+                            if (updateStatus != -1) {
+                                isSaveSuccess = true;
+                                Toast.makeText(DetailActActivity.this, "Aktivitas berhasil diselesaikan", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(DetailActActivity.this, "Gagal menyimpan data", Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+
                         }
+                    } catch (Exception e) {
+                        Log.e(TAG, "onClick: error tekan btn finish: " + e.getMessage());
+                    } finally {
+                        db.close();
+                    }
 
-                        if (isSaveSuccess) {
-                            //Lakukan perpindahan sub activity ke activity dengan indeks paling pertama
-                            //Ubah daftar subActivities
-                            //Masukkan ke dalam spinner
-                            //Pilih sub activity pertama
-                            subActivities.remove(subActivity);
-
-                            if (!subActivities.isEmpty()) {
-                                changeSubActivity(0);
-                                initializeSpinner();
-                            } else {
-                                llTimer.setVisibility(View.GONE);
-                                llQuantity.setVisibility(View.GONE);
-                                btnFinish.setVisibility(View.GONE);
-                                tvNoSubActivity.setVisibility(View.VISIBLE);
-                            }
+                    Log.i(TAG, "onClick: apakah berhasil menyimpan data sub: " + isSaveSuccess);
+                    if (isSaveSuccess) {
+                        //Lakukan perpindahan sub activity ke activity dengan indeks paling pertama
+                        //Ubah daftar subActivities
+                        //Masukkan ke dalam spinner
+                        //Pilih sub activity pertama
+                        boolean isRemoved = subActivities.removeIf(subActivity1 -> subActivity1.getId() == subActivityId);
+                        Log.i(TAG, "onClick: Berhasil hapus data subactivity: " + isRemoved);
+                        Log.i(TAG, "onClick: data subActivities: " + subActivities.toString());
+                        if (!subActivities.isEmpty()) {
+                            changeSubActivity(subActivities.get(0));
+                            initializeSpinner();
+                        } else {
+                            llTimer.setVisibility(View.GONE);
+                            llQuantity.setVisibility(View.GONE);
+                            btnFinish.setVisibility(View.GONE);
+                            tvNoSubActivity.setVisibility(View.VISIBLE);
                         }
                     }
-                });
+                }
+            });
 
-                builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                    }
-                });
+            builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                }
+            });
 
-                AlertDialog finishDialog = builder.create();
-                finishDialog.show();
-            }
+            AlertDialog finishDialog = builder.create();
+            finishDialog.show();
         });
 
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
@@ -315,28 +314,26 @@ public class DetailActActivity extends AppCompatActivity {
                         .collect(Collectors.toList())
         );
         spSubActivity.setAdapter(subActivityArrayAdapter);
+        spSubActivity.setText(subActivity.getTitle(), false);
     }
 
-    private void changeSubActivity(int i) {
-        //Cek jika item yang dipilih adalah item yang tidak sedang berjalan
-        SubActivity selectedSubActivity = subActivities.get(i);
-        if (selectedSubActivity.getId() != subActivityId) {
-            //Kategorikan berdasarkan tipe progressnya - waktu atau jumlah
-            if (categoryType.equals("Waktu")) {
-                if (isTimerRunning) {
-                    onPauseTimer(); //Lakukan, skema onPauseTimer
-                }
-
-                //Ambil data sub activity terbaru
-                subActivityId = selectedSubActivity.getId();
-                activityId = selectedSubActivity.getActivityId();
-                subActivity = selectedSubActivity;
-                Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
-
-                initializeTime();
-            } else {
-
+    private void changeSubActivity(SubActivity selectedSubActivity) {
+        Log.i(TAG, "changeSubActivity: Mulai proses perubahan sub activity");
+        //Kategorikan berdasarkan tipe progressnya - waktu atau jumlah
+        if (categoryType.equals("Waktu")) {
+            if (isTimerRunning) {
+                onPauseTimer(); //Lakukan, skema onPauseTimer
             }
+
+            //Ambil data sub activity terbaru
+            subActivityId = selectedSubActivity.getId();
+            activityId = selectedSubActivity.getActivityId();
+            subActivity = selectedSubActivity;
+            Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
+
+            initializeTime();
+        } else {
+
         }
     }
 
