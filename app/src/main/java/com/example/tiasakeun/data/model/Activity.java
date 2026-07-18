@@ -1,34 +1,34 @@
 package com.example.tiasakeun.data.model;
 
 public class Activity {
-    private int id;
-    private int typeId;
+    private Long id;
+    private Long typeId;
     private String title;;
     private int imageResourceId;
 
     public Activity() {
     }
 
-    public Activity(int id, int typeId, String title, int imageResourceId) {
+    public Activity(Long id, Long typeId, String title, int imageResourceId) {
         this.id = id;
         this.typeId = typeId;
         this.title = title;
         this.imageResourceId = imageResourceId;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public int getTypeId() {
+    public Long getTypeId() {
         return typeId;
     }
 
-    public void setTypeId(int typeId) {
+    public void setTypeId(Long typeId) {
         this.typeId = typeId;
     }
 

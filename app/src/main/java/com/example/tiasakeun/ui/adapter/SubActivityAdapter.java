@@ -329,7 +329,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
 
                                 subActivities.clear();
-                                subActivities.addAll(db.getSubActivitiesByActivityId(subActivity.getActivityId()));
+                                subActivities.addAll(db.getSubActivitiesByActivityId(subActivity.getActivityId(), null));
                                 notifyDataSetChanged();
 
                                 dialog.dismiss();
@@ -353,6 +353,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                 Intent intent = new Intent(view.getContext(), DetailActActivity.class);
                 intent.putExtra("SUB_ACTIVITY_ID", subActivity.getId());
                 intent.putExtra("ACTIVITY_ID", subActivity.getActivityId());
+                intent.putExtra("UNIT_NAME", subActivity.getUnitName());
                 view.getContext().startActivity(intent);
             }
         });

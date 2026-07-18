@@ -1,11 +1,11 @@
 package com.example.tiasakeun.ui.view;
 
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
@@ -24,9 +24,11 @@ import com.example.tiasakeun.R;
 import com.example.tiasakeun.data.model.SubActivity;
 import com.example.tiasakeun.data.source.DatabaseDataSource;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,12 +40,14 @@ public class DetailActActivity extends AppCompatActivity {
     private final String TAG = "DetailActActivity";
 
     //Variabel view
+    private MaterialCardView cardSubActivityProgress;
     private MaterialAutoCompleteTextView spSubActivity;
     private LinearLayout llQuantity;
     private LinearLayout llTimer;
     private TextView tvProgress;
     private TextView tvPercentProgress;
     private TextView tvTimer;
+    private TextInputEditText etQuantityTotalProgress;
     private Slider sliderProgress;
     private MaterialButton btnMinus;
     private MaterialButton btnPlus;
@@ -59,6 +63,7 @@ public class DetailActActivity extends AppCompatActivity {
     private ArrayList<SubActivity> subActivities = new ArrayList<>();
     private SubActivity subActivity = null;
     private String categoryType;
+    private String unitName;
 
     //Variabel untuk mengatur timer
     private CountDownTimer countDownTimer = null;
@@ -77,15 +82,14 @@ public class DetailActActivity extends AppCompatActivity {
     private DatabaseDataSource db = null;
 
     private void initView() {
+        cardSubActivityProgress = findViewById(R.id.cardSubActivityProgress);
         spSubActivity = findViewById(R.id.spSubActivity);
         llQuantity = findViewById(R.id.llQuantity);
         llTimer = findViewById(R.id.llTimer);
         tvProgress = findViewById(R.id.tvProgress);
         tvPercentProgress = findViewById(R.id.tvPercentProgress);
         tvTimer = findViewById(R.id.tvTimer);
-        sliderProgress = findViewById(R.id.sliderProgress);
-        btnMinus = findViewById(R.id.btnMinus);
-        btnPlus = findViewById(R.id.btnPlus);
+        etQuantityTotalProgress = findViewById(R.id.etQuantityTotalProgress);
         btnFinish = findViewById(R.id.btnFinish);
         btnResetTimer = findViewById(R.id.btnResetTimer);
         btnPlayPauseTimer = findViewById(R.id.btnPlayPauseTimer);
@@ -110,10 +114,14 @@ public class DetailActActivity extends AppCompatActivity {
 
         subActivityId = getIntent().getLongExtra("SUB_ACTIVITY_ID", 0L);
         activityId = getIntent().getLongExtra("ACTIVITY_ID", 0L);
+        unitName = getIntent().getStringExtra("UNIT_NAME");
         Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
 
         db.open();
-        subActivities.addAll(db.getSubActivitiesByActivityId(activityId));
+        subActivities.addAll(db.getSubActivitiesByActivityId(activityId, 0));
+        subActivity = db.getSubActivityById(subActivityId);
+        categoryType = db.getCategoryTypeById(activityId);
+        Log.i(TAG, "onCreate: ukuran data subActivities: " + subActivities.size());
 
         if (subActivities.isEmpty()) {
             llTimer.setVisibility(View.GONE);
@@ -121,28 +129,23 @@ public class DetailActActivity extends AppCompatActivity {
             btnFinish.setVisibility(View.GONE);
             tvNoSubActivity.setVisibility(View.VISIBLE);
         } else {
-            tvNoSubActivity.setVisibility(View.GONE);
+            Log.i(TAG, "categoryType: " + categoryType);
+            if (categoryType.equals("Waktu")) {
+                llTimer.setVisibility(View.VISIBLE);
+                llQuantity.setVisibility(View.GONE);
+            } else {
+                llTimer.setVisibility(View.GONE);
+                llQuantity.setVisibility(View.VISIBLE);
+            }
         }
-
-        subActivity = db.getSubActivityById(subActivityId);
-        categoryType = db.getCategoryTypeById(activityId);
         db.close();
 
         initializeSpinner();
 
         if (categoryType.equals("Waktu")) {
-            initializeTime();
+            initializeProgressValue();
         } else {
-
-        }
-
-        Log.i(TAG, "categoryType: " + categoryType);
-        if (categoryType.equals("Waktu")) {
-            llTimer.setVisibility(View.VISIBLE);
-            llQuantity.setVisibility(View.GONE);
-        } else {
-            llTimer.setVisibility(View.GONE);
-            llQuantity.setVisibility(View.VISIBLE);
+            initializeProgressValue();
         }
 
         spSubActivity.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -268,6 +271,7 @@ public class DetailActActivity extends AppCompatActivity {
                             changeSubActivity(subActivities.get(0));
                             initializeSpinner();
                         } else {
+                            spSubActivity.setText("Tidak ada aktivitas hari ini", false);
                             llTimer.setVisibility(View.GONE);
                             llQuantity.setVisibility(View.GONE);
                             btnFinish.setVisibility(View.GONE);
@@ -299,6 +303,32 @@ public class DetailActActivity extends AppCompatActivity {
             }
         };
 
+        etQuantityTotalProgress.setOnEditorActionListener((textView, actionId, keyEvent) -> {
+
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                String totalInput = etQuantityTotalProgress.getText().toString().trim();
+
+                if (!totalInput.isEmpty()) {
+                    try {
+                        db.open();
+                        String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+                        long createLogActivity = db.createLogActivity(subActivityId, Long.parseLong(totalInput), currentDate);
+
+                        if (createLogActivity != -1) {
+                        } else {
+                            Toast.makeText(this, "Gagal menyimpan data", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "onPauseTimer: error - " + e.getMessage());
+                    } finally {
+                        db.close();
+                    }
+                }
+                return true;
+            }
+            return false;
+        });
+
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
@@ -314,7 +344,12 @@ public class DetailActActivity extends AppCompatActivity {
                         .collect(Collectors.toList())
         );
         spSubActivity.setAdapter(subActivityArrayAdapter);
-        spSubActivity.setText(subActivity.getTitle(), false);
+
+        if (!subActivities.isEmpty()) {
+            spSubActivity.setText(subActivity.getTitle(), false);
+        } else {
+            spSubActivity.setText("Tidak ada aktivitas hari ini", false);
+        }
     }
 
     private void changeSubActivity(SubActivity selectedSubActivity) {
@@ -331,7 +366,7 @@ public class DetailActActivity extends AppCompatActivity {
             subActivity = selectedSubActivity;
             Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
 
-            initializeTime();
+            initializeProgressValue();
         } else {
 
         }
@@ -399,32 +434,40 @@ public class DetailActActivity extends AppCompatActivity {
         btnResetTimer.setEnabled(true);
     }
 
-    private void initializeTime() {
+    private void initializeProgressValue() {
         /**
          * targetInSeconds -> target waktu yang ingin dicapai
          * pada suatu aktivitas dikonversi ke detik
          */
         db.open();
-        long targetInSeconds= subActivity.getTargetValue();
-        cpTimber.setMax((int)targetInSeconds);
-        long progressInSeconds = db.getValueProgress(subActivityId);
 
-        Log.i(TAG, "onCreate: progress in seconds: " + progressInSeconds);
-        cpTimber.setProgress( (int) progressInSeconds);
+        if (categoryType.equals("Waktu")) {
+            long targetInSeconds= subActivity.getTargetValue();
+            cpTimber.setMax((int)targetInSeconds);
+            long progressInSeconds = db.getValueProgress(subActivityId, "Waktu");
 
-        //Cegah waktu menjadi minus
-        long secondsRemaining = targetInSeconds - progressInSeconds;
-        if (secondsRemaining < 0) {
-            secondsRemaining = 0;
+            Log.i(TAG, "onCreate: progress in seconds: " + progressInSeconds);
+            cpTimber.setProgress( (int) progressInSeconds);
+
+            //Cegah waktu menjadi minus
+            long secondsRemaining = targetInSeconds - progressInSeconds;
+            if (secondsRemaining < 0) {
+                secondsRemaining = 0;
+            }
+
+            //Tampilkan data waktu ke timer
+            long hh = secondsRemaining / 3600;
+            long mm = (secondsRemaining % 3600) / 60;
+            long ss = secondsRemaining % 60;
+            tvTimer.setText(String.format(Locale.getDefault(), "%02d:%02d:%02d", hh, mm, ss));
+
+            timeLeftInMillis = secondsRemaining * 1000L;
+        } else {
+            long progress = db.getValueProgress(subActivityId, "Jumlah");
+            tvProgress.setText(progress + "/" +  subActivity.getTargetValue() + " " + unitName);
+            etQuantityTotalProgress.setText(String.valueOf(progress));
         }
 
-        //Tampilkan data waktu ke timer
-        long hh = secondsRemaining / 3600;
-        long mm = (secondsRemaining % 3600) / 60;
-        long ss = secondsRemaining % 60;
-        tvTimer.setText(String.format(Locale.getDefault(), "%02d:%02d:%02d", hh, mm, ss));
-
-        timeLeftInMillis = secondsRemaining * 1000L;
         db.close();
     }
 

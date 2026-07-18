@@ -80,10 +80,10 @@ public class DatabaseDataSource {
         if (cursor.moveToFirst()) {
             do {
                 Activity activity = new Activity();
-                activity.setId(cursor.getInt(0));
+                activity.setId(cursor.getLong(0));
                 activity.setTitle(cursor.getString(1));
                 activity.setImageResourceId(cursor.getInt(2));
-                activity.setTypeId(cursor.getInt(3));
+                activity.setTypeId(cursor.getLong(3));
                 activities.add(activity);
             } while (cursor.moveToNext());
         }
@@ -91,7 +91,7 @@ public class DatabaseDataSource {
         return  activities;
     }
 
-    public ArrayList<SubActivity> getSubActivitiesByActivityId(long activityId) {
+    public ArrayList<SubActivity> getSubActivitiesByActivityId(Long activityId, Integer isCompleted) {
         ArrayList<SubActivity> subActivities = new ArrayList<>();
         /**
          * Ambil data
@@ -121,6 +121,7 @@ public class DatabaseDataSource {
                 " INNER JOIN " + ScheduleEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_SCHEDULE_ID + " = " + ScheduleEntry.TABLE_NAME + "." + TypeEntry._ID +
                 " LEFT JOIN " + ActivityLogEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID +
                 " WHERE " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + activityId +
+                (isCompleted != null ? " AND " + SubActivityEntry.COLUMN_IS_COMPLETED + " = " + isCompleted : "") +
                 " GROUP BY " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID;
 
         Cursor cursor = database.rawQuery(query, null);
@@ -215,11 +216,21 @@ public class DatabaseDataSource {
         return schedules;
     }
 
-    public int getValueProgress(long id) {
+    public int getValueProgress(long id, String categoryType) {
         int progress = 0;
-        String query = "Select SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ") FROM " + ActivityLogEntry.TABLE_NAME +
-                " INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
-                SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id;
+        String query;
+
+        if (categoryType.equals("Waktu")) {
+            query = "Select SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ") FROM " + ActivityLogEntry.TABLE_NAME +
+                    " INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
+                    SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id;
+        } else {
+            query = "Select " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + " FROM " + ActivityLogEntry.TABLE_NAME +
+                    " INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
+                    SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id +
+                    " ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " DESC " +
+                    " LIMIT 1";
+        }
 
         Cursor cursor = database.rawQuery(query, null);
 

@@ -73,7 +73,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
         holder.rvSubActivities.setLayoutManager(new LinearLayoutManager(context));
 
         db.open();
-        subActivities = db.getSubActivitiesByActivityId(activity.getId());
+        subActivities = db.getSubActivitiesByActivityId(activity.getId(), null);
         String category = db.getTypeCategory(activity.getId());
         db.close();
 
@@ -298,7 +298,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
                             if (result != -1) {
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
-                                ArrayList<SubActivity> newSubActivities = db.getSubActivitiesByActivityId(activity.getId());
+                                ArrayList<SubActivity> newSubActivities = db.getSubActivitiesByActivityId(activity.getId(), null);
 
                                 subActivities.clear();
                                 subActivities.addAll(newSubActivities);

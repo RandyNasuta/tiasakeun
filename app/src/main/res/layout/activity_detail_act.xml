@@ -14,6 +14,7 @@
         android:layout_margin="24dp">
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSubActivityProgress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="16dp"
@@ -49,7 +50,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:visibility="gone">
+                    android:visibility="visible">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -76,53 +77,71 @@
                             android:textColor="@color/accent_blue"/>
                     </LinearLayout>
 
-                    <com.google.android.material.slider.Slider
-                        android:id="@+id/sliderProgress"
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:valueFrom="0.0"
-                        android:value="2000.0"
-                        android:valueTo="4000.0"
-                        android:stepSize="1.0"
-                        app:trackHeight="16dp"
-                        app:thumbRadius="0dp"
-                        app:haloRadius="0dp"
-                        app:tickVisible="false"
-                        app:thumbColor="@color/accent_blue"
-                        app:trackColorActive="@color/accent_blue"
-                        app:trackColorInactive="#E0E0E0"
-                        android:layout_marginBottom="20dp"/>
+                        android:hint="@string/total"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_marginBottom="8dp"
+                        app:boxStrokeColor="@color/accent_blue"
+                        app:hintTextColor="@color/accent_blue">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnMinus"
-                            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etQuantityTotalProgress"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            app:icon="@drawable/outline_minus_24"
-                            app:iconTint="@color/white"
-                            android:backgroundTint="@color/accent_blue"/>
+                            android:inputType="number"
+                            android:textColor="@color/primary_text"
+                            android:imeOptions="actionDone"/>
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnPlus"
-                            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            app:icon="@drawable/outline_add_24"
-                            app:iconTint="@color/white"
-                            android:backgroundTint="@color/accent_blue"/>
+<!--                    <com.google.android.material.slider.Slider-->
+<!--                        android:id="@+id/sliderProgress"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:valueFrom="0.0"-->
+<!--                        android:value="2000.0"-->
+<!--                        android:valueTo="4000.0"-->
+<!--                        android:stepSize="1.0"-->
+<!--                        app:trackHeight="16dp"-->
+<!--                        app:thumbRadius="0dp"-->
+<!--                        app:haloRadius="0dp"-->
+<!--                        app:tickVisible="false"-->
+<!--                        app:thumbColor="@color/accent_blue"-->
+<!--                        app:trackColorActive="@color/accent_blue"-->
+<!--                        app:trackColorInactive="#E0E0E0"-->
+<!--                        android:layout_marginBottom="20dp"/>-->
 
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"/>
-                    </LinearLayout>
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:orientation="horizontal"-->
+<!--                        android:gravity="center_vertical">-->
+
+<!--                        <com.google.android.material.button.MaterialButton-->
+<!--                            android:id="@+id/btnMinus"-->
+<!--                            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"-->
+<!--                            android:layout_width="wrap_content"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            app:icon="@drawable/outline_minus_24"-->
+<!--                            app:iconTint="@color/white"-->
+<!--                            android:backgroundTint="@color/accent_blue"/>-->
+
+<!--                        <com.google.android.material.button.MaterialButton-->
+<!--                            android:id="@+id/btnPlus"-->
+<!--                            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"-->
+<!--                            android:layout_width="wrap_content"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginStart="8dp"-->
+<!--                            app:icon="@drawable/outline_add_24"-->
+<!--                            app:iconTint="@color/white"-->
+<!--                            android:backgroundTint="@color/accent_blue"/>-->
+
+<!--                        <View-->
+<!--                            android:layout_width="0dp"-->
+<!--                            android:layout_height="0dp"-->
+<!--                            android:layout_weight="1"/>-->
+<!--                    </LinearLayout>-->
                 </LinearLayout>
 
                 <LinearLayout
@@ -130,7 +149,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:visibility="visible">
+                    android:visibility="gone">
 
                     <FrameLayout
                         android:layout_width="match_parent"
@@ -197,6 +216,7 @@
                     android:layout_gravity="center"
                     android:text="@string/data_activity_does_not_exist"
                     android:textSize="16sp"
+                    android:layout_marginVertical="50dp"
                     android:textColor="@color/primary_text"
                     android:visibility="gone"/>
 
