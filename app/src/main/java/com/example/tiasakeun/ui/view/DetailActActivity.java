@@ -1,11 +1,15 @@
 package com.example.tiasakeun.ui.view;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
@@ -118,9 +122,9 @@ public class DetailActActivity extends AppCompatActivity {
         Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
 
         db.open();
-        subActivities.addAll(db.getSubActivitiesByActivityId(activityId, 0));
         subActivity = db.getSubActivityById(subActivityId);
         categoryType = db.getCategoryTypeById(activityId);
+        subActivities.addAll(db.getSubActivitiesByActivityId(activityId, 0, categoryType));
         Log.i(TAG, "onCreate: ukuran data subActivities: " + subActivities.size());
 
         if (subActivities.isEmpty()) {
@@ -148,67 +152,55 @@ public class DetailActActivity extends AppCompatActivity {
             initializeProgressValue();
         }
 
-        spSubActivity.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                SubActivity selectedSubActivity = subActivities.get(i);
-                if (selectedSubActivity.getId() != subActivityId) {
-                    changeSubActivity(subActivities.get(i));
-                }
+        spSubActivity.setOnItemClickListener((adapterView, view, i, l) -> {
+            SubActivity selectedSubActivity = subActivities.get(i);
+            if (selectedSubActivity.getId() != subActivityId) {
+                changeSubActivity(subActivities.get(i));
             }
         });
 
-        btnPlayPauseTimer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (isTimerRunning) {
-                    onPauseTimer();
-                } else {
-                    onStartTimer();
-                }
+        btnPlayPauseTimer.setOnClickListener(view -> {
+            if (isTimerRunning) {
+                onPauseTimer();
+            } else {
+                onStartTimer();
             }
         });
 
-        btnResetTimer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(DetailActActivity.this);
+        btnResetTimer.setOnClickListener(view -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(DetailActActivity.this);
 
-                builder.setTitle("Konfirmasi reset waktu");
-                builder.setMessage("Apakah anda yakin untuk mengulang waktu");
-                builder.setCancelable(true);
+            builder.setTitle("Konfirmasi reset waktu");
+            builder.setMessage("Apakah anda yakin untuk mengulang waktu");
+            builder.setCancelable(true);
 
-                builder.setPositiveButton("Ya", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        try {
-                            db.open();
-                            db.deleteActivityLogs(subActivityId);
-                        } catch (Exception e) {
-                            Log.e(TAG, "onClick: Error reset time: " + e.getMessage());
-                        } finally {
-                            db.close();
-                        }
+            builder.setPositiveButton("Ya", (dialogInterface, i) -> {
+                try {
+                    db.open();
+                    db.deleteActivityLogs(subActivityId);
+                } catch (Exception e) {
+                    Log.e(TAG, "onClick: Error reset time: " + e.getMessage());
+                } finally {
+                    db.close();
+                }
 
-                        timeLeftInMillis = subActivity.getTargetValue() * 1000L;
-                        cpTimber.setProgress(0);
+                timeLeftInMillis = subActivity.getTargetValue() * 1000L;
+                cpTimber.setProgress(0);
 
-                        long hh = subActivity.getTargetValue() / 3600;
-                        long mm = (subActivity.getTargetValue() % 3600) / 60;
-                        long ss = subActivity.getTargetValue() % 60;
-                        String timerView = String.format("%02d:%02d:%02d", hh, mm, ss);
-                        tvTimer.setText(timerView);
-                        elapsedTimeInSeconds = 0;
-                    }
-                });
+                long hh = subActivity.getTargetValue() / 3600;
+                long mm = (subActivity.getTargetValue() % 3600) / 60;
+                long ss = subActivity.getTargetValue() % 60;
+                String timerView = String.format("%02d:%02d:%02d", hh, mm, ss);
+                tvTimer.setText(timerView);
+                elapsedTimeInSeconds = 0;
+            });
 
-                builder.setNegativeButton("Tidak", (dialogInterface, i) ->
-                    dialogInterface.cancel()
-                );
+            builder.setNegativeButton("Tidak", (dialogInterface, i) ->
+                dialogInterface.cancel()
+            );
 
-                AlertDialog resetDialog = builder.create();
-                resetDialog.show();
-            }
+            AlertDialog resetDialog = builder.create();
+            resetDialog.show();
         });
 
         btnFinish.setOnClickListener(view -> {
@@ -250,7 +242,22 @@ public class DetailActActivity extends AppCompatActivity {
                                 Toast.makeText(DetailActActivity.this, "Gagal menyimpan data", Toast.LENGTH_LONG).show();
                             }
                         } else {
+                            String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+                            long finalQuantity = etQuantityTotalProgress.getText().toString().isEmpty() ? 0L : Long.parseLong(etQuantityTotalProgress.getText().toString());
+                            long createLogActivity = db.createLogActivity(subActivityId, finalQuantity, currentDate);
 
+                            if (createLogActivity == -1) {
+                                Toast.makeText(DetailActActivity.this, "Gagal menyimpan data", Toast.LENGTH_SHORT).show();
+                                return; //Berhenti jika gagal
+                            }
+
+                            long updateStatus = db.updateCompletedSubActivity(subActivityId);
+                            if (updateStatus != -1) {
+                                isSaveSuccess = true;
+                                Toast.makeText(DetailActActivity.this, "Aktivitas berhasil diselesaikan", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(DetailActActivity.this, "Gagal menyimpan data", Toast.LENGTH_LONG).show();
+                            }
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "onClick: error tekan btn finish: " + e.getMessage());
@@ -281,12 +288,7 @@ public class DetailActActivity extends AppCompatActivity {
                 }
             });
 
-            builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.cancel();
-                }
-            });
+            builder.setNegativeButton("Tidak", (dialogInterface, i) -> dialogInterface.cancel());
 
             AlertDialog finishDialog = builder.create();
             finishDialog.show();
@@ -303,28 +305,54 @@ public class DetailActActivity extends AppCompatActivity {
             }
         };
 
+
         etQuantityTotalProgress.setOnEditorActionListener((textView, actionId, keyEvent) -> {
 
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
+            // Mencegah terjadinya input 2 kali
+            if (keyEvent != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
+                return true;
+            }
+
+            // Kondisi tombol Enter ditekan
+            if (actionId == EditorInfo.IME_ACTION_DONE || (keyEvent != null && keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+
+                Log.i(TAG, "onCreate: Memulai input jumlah");
                 String totalInput = etQuantityTotalProgress.getText().toString().trim();
 
                 if (!totalInput.isEmpty()) {
                     try {
+                        long inputValue = Long.parseLong(totalInput);
+                        long targetValue = subActivity.getTargetValue();
+
                         db.open();
                         String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
                         long createLogActivity = db.createLogActivity(subActivityId, Long.parseLong(totalInput), currentDate);
 
                         if (createLogActivity != -1) {
+                            Toast.makeText(this, "Data berhasil disimpan", Toast.LENGTH_LONG).show();
+
+                            tvPercentProgress.setText(((inputValue * 100) / targetValue) + "%");
+
+                            tvProgress.setText(Long.parseLong(totalInput) + "/" + subActivity.getTargetValue() + " " + unitName);
+
+                            //Hilangkan keyboard setelah enter
+                            InputMethodManager imm =(InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(textView.getWindowToken(), 0);
+
+                            //Hilangkan fokus
+                            etQuantityTotalProgress.clearFocus();
                         } else {
-                            Toast.makeText(this, "Gagal menyimpan data", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Gagal menyimpan data", Toast.LENGTH_LONG).show();
                         }
                     } catch (Exception e) {
-                        Log.e(TAG, "onPauseTimer: error - " + e.getMessage());
+                        Log.e(TAG, "Input quantity: error: "  + e.getMessage());
                     } finally {
                         db.close();
                     }
+                    return true;
+                } else {
+                    Toast.makeText(this, "Input tidak boleh kosong", Toast.LENGTH_SHORT).show();
                 }
-                return true;
             }
             return false;
         });
@@ -359,17 +387,15 @@ public class DetailActActivity extends AppCompatActivity {
             if (isTimerRunning) {
                 onPauseTimer(); //Lakukan, skema onPauseTimer
             }
-
-            //Ambil data sub activity terbaru
-            subActivityId = selectedSubActivity.getId();
-            activityId = selectedSubActivity.getActivityId();
-            subActivity = selectedSubActivity;
-            Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
-
-            initializeProgressValue();
-        } else {
-
         }
+
+        //Ambil data sub activity terbaru
+        subActivityId = selectedSubActivity.getId();
+        activityId = selectedSubActivity.getActivityId();
+        subActivity = selectedSubActivity;
+        Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
+
+        initializeProgressValue();
     }
 
     private void onStartTimer() {

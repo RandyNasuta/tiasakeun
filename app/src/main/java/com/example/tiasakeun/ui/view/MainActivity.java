@@ -74,29 +74,23 @@ public class MainActivity extends AppCompatActivity {
 
         refreshDataAct();
 
-        buttonClick();
+        fabAddActivity.setOnClickListener(view -> showDialogCreateActivity());
     }
 
     private void refreshDataAct() {
         if (db != null) {
             db.open();
-            activityList.clear();
-            activityList.addAll(db.getAllActivities());
+            ArrayList<Activity> newData = db.getAllActivities();
             db.close();
 
-            if (activityAdapter != null) {
-                activityAdapter.notifyDataSetChanged();
+            if (activityList != null) {
+                activityList.clear();
+                activityList.addAll(newData);
             }
-        }
-    }
 
-    private void buttonClick() {
-        fabAddActivity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showDialogCreateActivity();
-            }
-        });
+            activityAdapter = new ActivityAdapter(MainActivity.this, activityList);
+            rVActiviy.setAdapter(activityAdapter);
+        }
     }
 
     private void showDialogCreateActivity() {
@@ -221,5 +215,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        Log.i(TAG, "onResume");
+        super.onResume();
+        refreshDataAct();
     }
 }

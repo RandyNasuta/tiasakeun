@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +44,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ActivityViewHolder> {
+    private final String TAG = "ActivityAdapter";
 
     private Context context;
     private final ArrayList<Activity> activityList;
@@ -73,8 +75,8 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
         holder.rvSubActivities.setLayoutManager(new LinearLayoutManager(context));
 
         db.open();
-        subActivities = db.getSubActivitiesByActivityId(activity.getId(), null);
         String category = db.getTypeCategory(activity.getId());
+        subActivities = db.getSubActivitiesByActivityId(activity.getId(), 0, category);
         db.close();
 
         subActivityAdapter = new SubActivityAdapter(subActivities, context);
@@ -298,8 +300,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
                             if (result != -1) {
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
-                                ArrayList<SubActivity> newSubActivities = db.getSubActivitiesByActivityId(activity.getId(), null);
-
+                                ArrayList<SubActivity> newSubActivities = db.getSubActivitiesByActivityId(activity.getId(), 0, category);
                                 subActivities.clear();
                                 subActivities.addAll(newSubActivities);
                                 subActivityAdapter.notifyDataSetChanged();

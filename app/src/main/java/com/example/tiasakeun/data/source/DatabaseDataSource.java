@@ -47,13 +47,13 @@ public class DatabaseDataSource {
         return database.insert(ActivityEntry.TABLE_NAME, null, values);
     }
 
-    public long createSubActivity(long activityId, long schduleId, String title, int targetValuye, String dateActivityt, int notification, int isCompleted) {
+    public long createSubActivity(long activityId, long scheduleId, String title, long targetValue, String dateActivity, int notification, int isCompleted) {
         ContentValues values = new ContentValues();
         values.put(SubActivityEntry.COLUMN_ACTIVITY_ID, activityId);
-        values.put(SubActivityEntry.COLUMN_SCHEDULE_ID, schduleId);
+        values.put(SubActivityEntry.COLUMN_SCHEDULE_ID, scheduleId);
         values.put(SubActivityEntry.COLUMN_TITLE, title);
-        values.put(SubActivityEntry.COLUMN_TARGET_VALUE, targetValuye);
-        values.put(SubActivityEntry.COLUMN_DATE_ACTIVITY, dateActivityt);
+        values.put(SubActivityEntry.COLUMN_TARGET_VALUE, targetValue);
+        values.put(SubActivityEntry.COLUMN_DATE_ACTIVITY, dateActivity);
         values.put(SubActivityEntry.COLUMN_NOTIFICATION, notification);
         values.put(SubActivityEntry.COLUMN_IS_COMPLETED, isCompleted);
         return database.insert(SubActivityEntry.TABLE_NAME, null, values);
@@ -91,7 +91,7 @@ public class DatabaseDataSource {
         return  activities;
     }
 
-    public ArrayList<SubActivity> getSubActivitiesByActivityId(Long activityId, Integer isCompleted) {
+    public ArrayList<SubActivity> getSubActivitiesByActivityId(Long activityId, Integer isCompleted, String categoryType) {
         ArrayList<SubActivity> subActivities = new ArrayList<>();
         /**
          * Ambil data
@@ -110,15 +110,14 @@ public class DatabaseDataSource {
                 SubActivityEntry.COLUMN_TARGET_VALUE + ", " +
                 SubActivityEntry.COLUMN_NOTIFICATION + ", " +
                 SubActivityEntry.COLUMN_DATE_ACTIVITY + ", " +
-                SubActivityEntry.COLUMN_TARGET_VALUE + ", " +
                 SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_ACTIVITY_ID + ", " +
                 ScheduleEntry.TABLE_NAME + "." + ScheduleEntry.COLUMN_TYPE + ", " +
                 TypeEntry.TABLE_NAME + "." +  TypeEntry.COLUMN_UNIT_NAME + ", " +
-                "IFNULL(SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + "), 0) AS current_value " +
+                "IFNULL(" + ( categoryType.equals("Waktu") ? "SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ")" : ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE) + ", 0) AS current_value " +
                 " FROM " + SubActivityEntry.TABLE_NAME +
                 " INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID +
                 " INNER JOIN " + TypeEntry.TABLE_NAME + " ON " + ActivityEntry.COLUMN_TYPE_ID + " = " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID +
-                " INNER JOIN " + ScheduleEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_SCHEDULE_ID + " = " + ScheduleEntry.TABLE_NAME + "." + TypeEntry._ID +
+                " INNER JOIN " + ScheduleEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_SCHEDULE_ID + " = " + ScheduleEntry.TABLE_NAME + "." + ScheduleEntry._ID +
                 " LEFT JOIN " + ActivityLogEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID +
                 " WHERE " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + activityId +
                 (isCompleted != null ? " AND " + SubActivityEntry.COLUMN_IS_COMPLETED + " = " + isCompleted : "") +
@@ -136,7 +135,6 @@ public class DatabaseDataSource {
                 subActivity.setTargetValue(cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_TARGET_VALUE)));
                 subActivity.setNotification(cursor.getInt(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_NOTIFICATION)));
                 subActivity.setScheduleType(cursor.getString(cursor.getColumnIndexOrThrow(ScheduleEntry.COLUMN_TYPE)));
-                subActivity.setTargetValue(cursor.getInt(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_TARGET_VALUE)));
                 subActivity.setUnitName(cursor.getString(cursor.getColumnIndexOrThrow(TypeEntry.COLUMN_UNIT_NAME)));
                 subActivity.setCurrentValue(cursor.getInt(cursor.getColumnIndexOrThrow("current_value")));
                 subActivities.add(subActivity);
@@ -154,10 +152,10 @@ public class DatabaseDataSource {
         if (cursor.moveToFirst()) {
             do {
                 subActivity.setId(cursor.getLong(0));
-                subActivity.setActivityId(cursor.getInt(1));
+                subActivity.setActivityId(cursor.getLong(1));
                 subActivity.setScheduleId(cursor.getLong(2));
                 subActivity.setTitle(cursor.getString(3));
-                subActivity.setTargetValue(cursor.getInt(4));
+                subActivity.setTargetValue(cursor.getLong(4));
                 subActivity.setDateActivity(cursor.getString(5));
                 subActivity.setNotification(cursor.getInt(6));
                 subActivity.setIsCompleted(cursor.getInt(7));
@@ -239,6 +237,7 @@ public class DatabaseDataSource {
                 progress = cursor.getInt(0);
             } while (cursor.moveToNext());
         }
+        cursor.close();
 
         return progress;
     }
@@ -266,6 +265,7 @@ public class DatabaseDataSource {
                 category = cursor.getString(0);
             } while (cursor.moveToNext());
         }
+        cursor.close();
 
         return category;
     }

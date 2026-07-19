@@ -67,12 +67,17 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
     public void onBindViewHolder(@NonNull SubActivityAdapter.ViewHolder holder, int position) {
         SubActivity subActivity = subActivities.get(position);
         holder.tvSubTitle.setText(subActivity.getTitle());
-        holder.tvSubProgress.setText(String.format("%s / %s %s", String.valueOf(subActivity.getCurrentValue() % 3600 / 60), String.valueOf(subActivity.getTargetValue() % 3600 / 60), subActivity.getUnitName()));
 
 
         db.open();
         String category = db.getTypeCategory(subActivity.getActivityId());
         db.close();
+
+        if (category.equals("Waktu")) {
+            holder.tvSubProgress.setText(String.format("%s / %s %s", subActivity.getCurrentValue() % 3600 / 60, subActivity.getTargetValue() % 3600 / 60, subActivity.getUnitName()));
+        } else {
+            holder.tvSubProgress.setText(String.format("%s / %s %s", subActivity.getCurrentValue(), subActivity.getTargetValue(), subActivity.getUnitName()));
+        }
 
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -329,7 +334,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
 
                                 subActivities.clear();
-                                subActivities.addAll(db.getSubActivitiesByActivityId(subActivity.getActivityId(), null));
+                                subActivities.addAll(db.getSubActivitiesByActivityId(subActivity.getActivityId(), null, category));
                                 notifyDataSetChanged();
 
                                 dialog.dismiss();
