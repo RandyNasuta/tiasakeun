@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -35,12 +36,14 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    //Variabel view
     private static final String TAG = "MainActivity";
     private FloatingActionButton fabAddActivity;
     private RecyclerView rVActiviy;
     private ActivityAdapter activityAdapter;
     private ArrayList<Activity> activityList = new ArrayList<>();
     private DatabaseDataSource db = null;
+    private TextView tvNoDataActiviy;
 
     private void initView() {
         fabAddActivity = findViewById(R.id.fabAddActivity);
@@ -48,10 +51,19 @@ public class MainActivity extends AppCompatActivity {
         //RecyclerView
         rVActiviy = findViewById(R.id.rVActiviy);
         rVActiviy.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        tvNoDataActiviy = findViewById(R.id.tvNoDataActiviy);
 
         db.open();
         activityList.addAll(db.getAllActivities());
         db.close();
+
+        if (activityList.isEmpty()) {
+            tvNoDataActiviy.setVisibility(View.VISIBLE);
+            rVActiviy.setVisibility(View.GONE);
+        } else {
+            tvNoDataActiviy.setVisibility(View.GONE);
+            rVActiviy.setVisibility(View.VISIBLE);
+        }
 
         activityAdapter = new ActivityAdapter(MainActivity.this, activityList);
         rVActiviy.setAdapter(activityAdapter);
@@ -82,6 +94,14 @@ public class MainActivity extends AppCompatActivity {
             db.open();
             ArrayList<Activity> newData = db.getAllActivities();
             db.close();
+
+            if (newData.isEmpty()) {
+                tvNoDataActiviy.setVisibility(View.VISIBLE);
+                rVActiviy.setVisibility(View.GONE);
+            } else {
+                tvNoDataActiviy.setVisibility(View.GONE);
+                rVActiviy.setVisibility(View.VISIBLE);
+            }
 
             if (activityList != null) {
                 activityList.clear();

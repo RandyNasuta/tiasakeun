@@ -3,6 +3,7 @@ package com.example.tiasakeun.ui.view;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -200,6 +201,11 @@ public class DetailActActivity extends AppCompatActivity {
             );
 
             AlertDialog resetDialog = builder.create();
+
+            if (resetDialog.isShowing()) {
+                return;
+            }
+
             resetDialog.show();
         });
 
@@ -260,7 +266,10 @@ public class DetailActActivity extends AppCompatActivity {
                             }
                         }
                     } catch (Exception e) {
+                        Toast.makeText(DetailActActivity.this, "Gagal menyimpan data", Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "onClick: error tekan btn finish: " + e.getMessage());
+                        db.close();
+                        return;
                     } finally {
                         db.close();
                     }
@@ -291,6 +300,11 @@ public class DetailActActivity extends AppCompatActivity {
             builder.setNegativeButton("Tidak", (dialogInterface, i) -> dialogInterface.cancel());
 
             AlertDialog finishDialog = builder.create();
+
+            if (finishDialog.isShowing()) {
+                return;
+            }
+
             finishDialog.show();
         });
 
@@ -499,13 +513,66 @@ public class DetailActActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        onPauseTimer();
         super.onPause();
+        Log.i(TAG, "onPause run");
+        if (isTimerRunning && countDownTimer!= null) {
+            countDownTimer.cancel();
+
+            SharedPreferences sharedPreferences = getSharedPreferences("TIMER_PREF", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+
+            editor.putBoolean("IS_TIMER_RUNNING", true);
+            editor.putLong("TIME_EXITED", System.currentTimeMillis());
+            editor.putLong("TIME_LEFT_IN_MILLIS", timeLeftInMillis);
+            editor.putLong("ELAPSED_TIME_IN_SECONDS", elapsedTimeInSeconds);
+            editor.putLong("SUB_ACTIVITY_ID", subActivityId);
+            editor.apply();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume run");
+
+        SharedPreferences sharedPreferences = getSharedPreferences("TIMER_PREF", MODE_PRIVATE);
+        boolean wasRunning = sharedPreferences.getBoolean("IS_TIMER_RUNNING", false);
+        long savedSubActivityId = sharedPreferences.getLong("SUB_ACTIVITY_ID", -1);
+
+        if (wasRunning && savedSubActivityId == subActivityId) {
+            long timeExited = sharedPreferences.getLong("TIME_EXITED", 0);
+            long savedTimeLeft = sharedPreferences.getLong("TIME_LEFT_IN_MILLIS", 0);
+            long savedElapsedTime = sharedPreferences.getLong("ELAPSED_TIME_IN_SECONDS", 0);
+
+            long timeAwayInMillis = System.currentTimeMillis() - timeExited;
+            timeLeftInMillis = savedTimeLeft - timeAwayInMillis;
+            elapsedTimeInSeconds = savedElapsedTime + (timeAwayInMillis / 1000);
+            sharedPreferences.edit().clear().apply();
+
+            if (timeLeftInMillis <= 0) {
+                timeLeftInMillis = 0;
+                isTimerRunning = false;
+                String timerView = String.format("%02d:%02d:%02d", 00, 00, 00);
+                tvTimer.setText(timerView);
+                Toast.makeText(this, "Waktu sudah habis", Toast.LENGTH_SHORT).show();
+            } else {
+                isTimerRunning = true;
+                onStartTimer();
+            }
+        } else {
+            sharedPreferences.edit().clear().apply();
+        }
     }
 
     @Override
     protected void onStop() {
-        onPauseTimer();
         super.onStop();
+        Log.i(TAG, "onStop run");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy run");
     }
 }

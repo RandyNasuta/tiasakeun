@@ -68,6 +68,30 @@ public class DatabaseDataSource {
     }
 
     //READ
+
+    public SubActivity getLastSubActivityByActivityId(Long activityId) {
+        SubActivity subActivity = new SubActivity();
+        String query = "SELECT * FROM sub_activities WHERE activity_id = " + activityId + " ORDER BY id DESC LIMIT 1";
+
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                subActivity.setId(cursor.getLong(0));
+                subActivity.setActivityId(cursor.getLong(1));
+                subActivity.setScheduleId(cursor.getLong(2));
+                subActivity.setTitle(cursor.getString(3));
+                subActivity.setTargetValue(cursor.getLong(4));
+                subActivity.setDateActivity(cursor.getString(5));
+                subActivity.setNotification(cursor.getInt(6));
+                subActivity.setIsCompleted(cursor.getInt(7));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        return subActivity;
+    }
+
     public ArrayList<Activity> getAllActivities() {
         ArrayList<Activity> activities = new ArrayList<>();
         String query = "Select " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID  +
