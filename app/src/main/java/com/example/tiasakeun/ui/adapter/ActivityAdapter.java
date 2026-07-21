@@ -300,15 +300,8 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
                             if (result != -1) {
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
+                                notifyItemChanged(holder.getAdapterPosition());
 
-                                ArrayList<SubActivity> newSubActivities = db.getSubActivitiesByActivityId(activity.getId(), 0, category);
-                                subActivities.clear();
-                                subActivities.addAll(newSubActivities);
-//                                subActivityAdapter.notifyDataSetChanged();
-
-                                subActivities = db.getSubActivitiesByActivityId(activity.getId(), 0, category);
-                                subActivityAdapter = new SubActivityAdapter(subActivities, context);
-                                holder.rvSubActivities.setAdapter(subActivityAdapter);
                                 dialog.dismiss();
                             } else {
                                 Toast.makeText(context.getApplicationContext(), R.string.failed_to_save_the_data, Toast.LENGTH_SHORT).show();
@@ -335,6 +328,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
                 TransitionManager.beginDelayedTransition((ViewGroup) holder.itemView, transition);
 
+                Log.i(TAG, "onClick: isExpanded layout: " + isExpanded);
                 if (isExpanded) {
                     holder.layoutExpandable.setVisibility(GONE);
                     holder.ivArrow.animate().rotation(0f).setDuration(300).start();

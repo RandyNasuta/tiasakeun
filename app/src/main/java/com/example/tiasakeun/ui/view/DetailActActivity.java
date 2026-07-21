@@ -146,12 +146,7 @@ public class DetailActActivity extends AppCompatActivity {
         db.close();
 
         initializeSpinner();
-
-        if (categoryType.equals("Waktu")) {
-            initializeProgressValue();
-        } else {
-            initializeProgressValue();
-        }
+        initializeProgressValue();
 
         spSubActivity.setOnItemClickListener((adapterView, view, i, l) -> {
             SubActivity selectedSubActivity = subActivities.get(i);
@@ -417,6 +412,8 @@ public class DetailActActivity extends AppCompatActivity {
             @Override
             public void onFinish() {
                 isTimerRunning = false;
+                btnPlayPauseTimer.setIconResource(R.drawable.outline_autoplay_24);
+                btnResetTimer.setEnabled(true);
                 Toast.makeText(DetailActActivity.this, "target waktu telah tercapai", Toast.LENGTH_SHORT).show();
             }
 
@@ -505,6 +502,7 @@ public class DetailActActivity extends AppCompatActivity {
         } else {
             long progress = db.getValueProgress(subActivityId, "Jumlah");
             tvProgress.setText(progress + "/" +  subActivity.getTargetValue() + " " + unitName);
+            tvPercentProgress.setText(((progress * 100) / subActivity.getTargetValue()) + "%");
             etQuantityTotalProgress.setText(String.valueOf(progress));
         }
 

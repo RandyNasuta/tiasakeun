@@ -95,54 +95,6 @@
                             android:textColor="@color/primary_text"
                             android:imeOptions="actionDone"/>
                     </com.google.android.material.textfield.TextInputLayout>
-
-<!--                    <com.google.android.material.slider.Slider-->
-<!--                        android:id="@+id/sliderProgress"-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:valueFrom="0.0"-->
-<!--                        android:value="2000.0"-->
-<!--                        android:valueTo="4000.0"-->
-<!--                        android:stepSize="1.0"-->
-<!--                        app:trackHeight="16dp"-->
-<!--                        app:thumbRadius="0dp"-->
-<!--                        app:haloRadius="0dp"-->
-<!--                        app:tickVisible="false"-->
-<!--                        app:thumbColor="@color/accent_blue"-->
-<!--                        app:trackColorActive="@color/accent_blue"-->
-<!--                        app:trackColorInactive="#E0E0E0"-->
-<!--                        android:layout_marginBottom="20dp"/>-->
-
-<!--                    <LinearLayout-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:orientation="horizontal"-->
-<!--                        android:gravity="center_vertical">-->
-
-<!--                        <com.google.android.material.button.MaterialButton-->
-<!--                            android:id="@+id/btnMinus"-->
-<!--                            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"-->
-<!--                            android:layout_width="wrap_content"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            app:icon="@drawable/outline_minus_24"-->
-<!--                            app:iconTint="@color/white"-->
-<!--                            android:backgroundTint="@color/accent_blue"/>-->
-
-<!--                        <com.google.android.material.button.MaterialButton-->
-<!--                            android:id="@+id/btnPlus"-->
-<!--                            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"-->
-<!--                            android:layout_width="wrap_content"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:layout_marginStart="8dp"-->
-<!--                            app:icon="@drawable/outline_add_24"-->
-<!--                            app:iconTint="@color/white"-->
-<!--                            android:backgroundTint="@color/accent_blue"/>-->
-
-<!--                        <View-->
-<!--                            android:layout_width="0dp"-->
-<!--                            android:layout_height="0dp"-->
-<!--                            android:layout_weight="1"/>-->
-<!--                    </LinearLayout>-->
                 </LinearLayout>
 
                 <LinearLayout
@@ -236,5 +188,132 @@
             android:layout_height="1dp"
             android:background="#1A000000"
             android:layout_marginVertical="16dp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:strokeWidth="0dp"
+            android:backgroundTint="@color/window_background">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/activity_report"
+                    android:textSize="@dimen/text_size_title_medium"
+                    android:textColor="@color/primary_text"
+                    android:layout_marginBottom="20dp"
+                    android:layout_gravity="center"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/btnToggleDays"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true"
+                        app:checkedButton="@+id/btnOneDay"
+                        android:layout_weight="1">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnOneDay"
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/accent_blue"
+                            android:minWidth="0dp"
+                            android:padding="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0"
+                            android:textSize="12sp"
+                            android:maxLines="1"
+                            app:cornerRadius="10dp"
+                            android:text="@string/one_day"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnOneWeek"
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/accent_blue"
+                            android:minWidth="0dp"
+                            android:padding="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0"
+                            android:textSize="12sp"
+                            android:maxLines="1"
+                            android:text="@string/one_week"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnOneMonth"
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/accent_blue"
+                            android:minWidth="0dp"
+                            android:padding="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0"
+                            android:textSize="12sp"
+                            android:maxLines="1"
+                            android:text="@string/one_month"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnThreeMonths"
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/accent_blue"
+                            android:minWidth="0dp"
+                            android:padding="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0"
+                            android:textSize="12sp"
+                            android:maxLines="1"
+                            android:text="@string/three_month"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnOnYear"
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/accent_blue"
+                            android:minWidth="0dp"
+                            android:padding="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0"
+                            android:textSize="12sp"
+                            android:maxLines="1"
+                            app:cornerRadius="10dp"
+                            android:text="@string/one_year"/>
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"/>
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvReporSubAcivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp" />
+
+
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

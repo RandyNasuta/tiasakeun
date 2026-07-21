@@ -25,4 +25,10 @@
     <string name="save_time">Simpan waktu</string>
     <string name="data_activity_does_not_exist">Tidak ada data aktivitas</string>
     <string name="no_activity_data_exists">Tidak ada data aktivitas</string>
+    <string name="activity_report">Laporan Aktivitas</string>
+    <string name="one_day">1H</string>
+    <string name="one_week">1M</string>
+    <string name="one_month">1B</string>
+    <string name="three_month">3B</string>
+    <string name="one_year">1T</string>
 </resources>
