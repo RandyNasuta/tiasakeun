@@ -215,7 +215,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp"
+                    android:gravity="center">
 
                     <com.google.android.material.button.MaterialButtonToggleGroup
                         android:id="@+id/btnToggleDays"
@@ -299,20 +301,30 @@
                             android:text="@string/one_year"/>
                     </com.google.android.material.button.MaterialButtonToggleGroup>
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"/>
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSorting"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sorting"
+                            app:cornerRadius="10dp"
+                            android:backgroundTint="@color/accent_blue"
+                            android:layout_gravity="center"/>
+
+                    </LinearLayout>
                 </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvReporSubAcivity"
+                    android:id="@+id/rvReportSubAcivity"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="20dp" />
-
-
-
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

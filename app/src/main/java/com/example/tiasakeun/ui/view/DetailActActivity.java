@@ -2,7 +2,6 @@ package com.example.tiasakeun.ui.view;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -11,7 +10,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -24,14 +22,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tiasakeun.R;
 import com.example.tiasakeun.data.model.SubActivity;
+import com.example.tiasakeun.data.model.SubActivityLog;
 import com.example.tiasakeun.data.source.DatabaseDataSource;
+import com.example.tiasakeun.ui.adapter.SubActivityReportAdapter;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
-import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -45,6 +46,8 @@ public class DetailActActivity extends AppCompatActivity {
     private final String TAG = "DetailActActivity";
 
     //Variabel view
+
+    //Section 1 view group
     private MaterialCardView cardSubActivityProgress;
     private MaterialAutoCompleteTextView spSubActivity;
     private LinearLayout llQuantity;
@@ -53,16 +56,22 @@ public class DetailActActivity extends AppCompatActivity {
     private TextView tvPercentProgress;
     private TextView tvTimer;
     private TextInputEditText etQuantityTotalProgress;
-    private Slider sliderProgress;
-    private MaterialButton btnMinus;
-    private MaterialButton btnPlus;
     private MaterialButton btnFinish;
     private MaterialButton btnResetTimer;
     private MaterialButton btnPlayPauseTimer;
     private CircularProgressIndicator cpTimber;
     private TextView tvNoSubActivity;
 
+    //Section 2 view group
+    private RecyclerView rvReportSubAcivity;
+    private MaterialButtonToggleGroup btnToggleDays;
+    private MaterialButton btnSorting;
+    private SubActivityReportAdapter subActivityReportAdapter;
+
+
     //Variabel data
+
+    //Section 1
     private long subActivityId = 0L;
     private long activityId = 0L;
     private ArrayList<SubActivity> subActivities = new ArrayList<>();
@@ -82,11 +91,15 @@ public class DetailActActivity extends AppCompatActivity {
      */
     private long elapsedTimeInSeconds = 0L;
 
+    //Section 2
+    private ArrayList<SubActivityLog> subActivityLogs = new ArrayList<>();
+
 
     //Database
     private DatabaseDataSource db = null;
 
     private void initView() {
+        //Section 1 view group
         cardSubActivityProgress = findViewById(R.id.cardSubActivityProgress);
         spSubActivity = findViewById(R.id.spSubActivity);
         llQuantity = findViewById(R.id.llQuantity);
@@ -100,6 +113,13 @@ public class DetailActActivity extends AppCompatActivity {
         btnPlayPauseTimer = findViewById(R.id.btnPlayPauseTimer);
         cpTimber = findViewById(R.id.cpTimber);
         tvNoSubActivity = findViewById(R.id.tvNoSubActivity);
+
+        //Section 2 view group
+        rvReportSubAcivity = findViewById(R.id.rvReportSubAcivity);
+        btnToggleDays = findViewById(R.id.btnToggleDays);
+        btnSorting = findViewById(R.id.btnSorting);
+
+        subActivityReportAdapter = new SubActivityReportAdapter(subActivityLogs, DetailActActivity.this);
     }
 
     @Override

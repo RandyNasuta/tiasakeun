@@ -31,4 +31,8 @@
     <string name="one_month">1B</string>
     <string name="three_month">3B</string>
     <string name="one_year">1T</string>
+    <string name="sorting">Urutkan</string>
+    <string name="reading_a_book">Membaca buku</string>
+    <string name="sixty_minutes">60 Menit</string>
+    <string name="example_date">22 Juli 2026</string>
 </resources>

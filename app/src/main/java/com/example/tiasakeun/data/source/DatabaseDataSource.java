@@ -15,7 +15,9 @@ import com.example.tiasakeun.data.local.TypeContract.TypeEntry;
 import com.example.tiasakeun.data.model.Activity;
 import com.example.tiasakeun.data.model.Schedule;
 import com.example.tiasakeun.data.model.SubActivity;
+import com.example.tiasakeun.data.model.SubActivityLog;
 import com.example.tiasakeun.data.model.Type;
+import com.example.tiasakeun.ui.adapter.SubActivityReportAdapter;
 
 import java.util.ArrayList;
 
@@ -68,7 +70,6 @@ public class DatabaseDataSource {
     }
 
     //READ
-
     public SubActivity getLastSubActivityByActivityId(Long activityId) {
         SubActivity subActivity = new SubActivity();
         String query = "SELECT * FROM sub_activities WHERE activity_id = " + activityId + " ORDER BY id DESC LIMIT 1";
@@ -292,6 +293,43 @@ public class DatabaseDataSource {
         cursor.close();
 
         return category;
+    }
+
+    public ArrayList<SubActivityLog> getSubActivityLogs(Long subActivityId) {
+        ArrayList<SubActivityLog> subActivityLogs = new ArrayList<>();
+
+        String query = "SELECT " +
+                ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry._ID + ", " +
+                ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ", " +
+                ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + ", " +
+                SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + ", " +
+                SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_TITLE + ", " +
+                TypeEntry.TABLE_NAME + "." + TypeEntry.COLUMN_CATEGORY + ", " +
+                TypeEntry.TABLE_NAME + "." + TypeEntry.COLUMN_UNIT_NAME +
+                " FROM " + ActivityLogEntry.TABLE_NAME + " " +
+                "INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " " +
+                "INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID + " " +
+                "INNER JOIN " + TypeEntry.TABLE_NAME + " ON " + ActivityEntry.TABLE_NAME + "." + ActivityEntry.COLUMN_TYPE_ID + " = " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID + " " +
+                "WHERE " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + subActivityId + " " +
+                "ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " DESC";
+
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                subActivityLogs.add(new SubActivityLog(
+                        cursor.getLong(0),
+                        cursor.getLong(1),
+                        cursor.getString(2),
+                        cursor.getLong(3),
+                        cursor.getString(4),
+                        cursor.getString(5),
+                        cursor.getString(6)
+                ));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return subActivityLogs;
     }
 
     //UPDATE
