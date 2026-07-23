@@ -5,6 +5,8 @@
     <dimen name="text_size_h3">24sp</dimen>
     <dimen name="text_size_title_large">22sp</dimen>
     <dimen name="text_size_title_medium">16sp</dimen>
+    <dimen name="text_size_title_samll">12sp</dimen>
     <dimen name="text_size_body_large">16sp</dimen>
-    <dimen name="text_size_body_medium">16sp</dimen>
+    <dimen name="text_size_body_medium">12sp</dimen>
+    <dimen name="text_size_body_smal">8sp</dimen>
 </resources>

@@ -22,6 +22,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tiasakeun.R;
@@ -116,10 +118,10 @@ public class DetailActActivity extends AppCompatActivity {
 
         //Section 2 view group
         rvReportSubAcivity = findViewById(R.id.rvReportSubAcivity);
+        rvReportSubAcivity.setLayoutManager(new LinearLayoutManager(this));
+        rvReportSubAcivity.addItemDecoration(new DividerItemDecoration(rvReportSubAcivity.getContext(), new LinearLayoutManager(this).getOrientation()));
         btnToggleDays = findViewById(R.id.btnToggleDays);
         btnSorting = findViewById(R.id.btnSorting);
-
-        subActivityReportAdapter = new SubActivityReportAdapter(subActivityLogs, DetailActActivity.this);
     }
 
     @Override
@@ -146,7 +148,7 @@ public class DetailActActivity extends AppCompatActivity {
         subActivity = db.getSubActivityById(subActivityId);
         categoryType = db.getCategoryTypeById(activityId);
         subActivities.addAll(db.getSubActivitiesByActivityId(activityId, 0, categoryType));
-        Log.i(TAG, "onCreate: ukuran data subActivities: " + subActivities.size());
+        subActivityLogs.addAll(db.getSubActivityLogs(subActivityId));
 
         if (subActivities.isEmpty()) {
             llTimer.setVisibility(View.GONE);
@@ -165,8 +167,14 @@ public class DetailActActivity extends AppCompatActivity {
         }
         db.close();
 
+        //Inisialisasi adapter sub activity report
+        subActivityReportAdapter = new SubActivityReportAdapter(subActivityLogs, DetailActActivity.this);
+        rvReportSubAcivity.setAdapter(subActivityReportAdapter);
+
         initializeSpinner();
         initializeProgressValue();
+
+        //Section 1
 
         spSubActivity.setOnItemClickListener((adapterView, view, i, l) -> {
             SubActivity selectedSubActivity = subActivities.get(i);
@@ -384,6 +392,11 @@ public class DetailActActivity extends AppCompatActivity {
                 }
             }
             return false;
+        });
+
+        //Section 2
+        btnSorting.setOnClickListener(view -> {
+
         });
 
         getOnBackPressedDispatcher().addCallback(this, callback);
