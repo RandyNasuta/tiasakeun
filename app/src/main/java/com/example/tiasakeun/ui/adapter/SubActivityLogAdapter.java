@@ -12,32 +12,36 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.tiasakeun.R;
 import com.example.tiasakeun.data.model.SubActivityLog;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Locale;
 
-public class SubActivityReportAdapter extends RecyclerView.Adapter<SubActivityReportAdapter.SubActivityReportViewHolder> {
+public class SubActivityLogAdapter extends RecyclerView.Adapter<SubActivityLogAdapter.SubActivityLogViewHolder> {
 
     private ArrayList<SubActivityLog> subActivityLogs;
     private Context context;
 
-    public SubActivityReportAdapter(ArrayList<SubActivityLog> subActivityLogs, Context context) {
+    public SubActivityLogAdapter(ArrayList<SubActivityLog> subActivityLogs, Context context) {
         this.subActivityLogs = subActivityLogs;
         this.context = context;
     }
 
+    public void setSubActivityLogs(ArrayList<SubActivityLog> subActivityLogs) {
+        this.subActivityLogs.clear();
+        this.subActivityLogs.addAll(subActivityLogs);
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
-    public SubActivityReportViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sub_activity_report, parent, false);
-        return new SubActivityReportViewHolder(view);
+    public SubActivityLogViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sub_activity_log, parent, false);
+        return new SubActivityLogViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SubActivityReportViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull SubActivityLogViewHolder holder, int position) {
         SubActivityLog subActivityLog = subActivityLogs.get(position);
 
         //Atur format date string yang diterima
@@ -64,12 +68,14 @@ public class SubActivityReportAdapter extends RecyclerView.Adapter<SubActivityRe
         return subActivityLogs.size();
     }
 
-    public static class SubActivityReportViewHolder extends RecyclerView.ViewHolder {
+
+
+    public static class SubActivityLogViewHolder extends RecyclerView.ViewHolder {
         TextView tvSubActivity;
         TextView tvSubActivityValue;
         TextView tvSubActivityDate;
 
-        public SubActivityReportViewHolder(@NonNull View itemView) {
+        public SubActivityLogViewHolder(@NonNull View itemView) {
             super(itemView);
             tvSubActivity = itemView.findViewById(R.id.tvSubActivity);
             tvSubActivityValue = itemView.findViewById(R.id.tvSubActivityValue);

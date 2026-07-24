@@ -207,7 +207,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/activity_report"
+                    android:text="@string/activity_log"
                     android:textSize="@dimen/text_size_title_medium"
                     android:textColor="@color/primary_text"
                     android:layout_marginBottom="20dp"
@@ -227,7 +227,7 @@
                         app:singleSelection="true"
                         app:selectionRequired="true"
                         app:checkedButton="@+id/btnOneDay"
-                        android:layout_weight="1.25"
+                        android:layout_weight="1.15"
                         android:layout_marginEnd="8dp">
 
                         <com.google.android.material.button.MaterialButton
@@ -274,21 +274,7 @@
                             android:text="@string/one_month"/>
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnThreeMonths"
-                            android:layout_weight="1"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:backgroundTint="@color/accent_blue"
-                            android:minWidth="0dp"
-                            android:padding="0dp"
-                            android:insetLeft="0dp"
-                            android:insetRight="0dp"
-                            android:textSize="12sp"
-                            android:maxLines="1"
-                            android:text="@string/three_month"/>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnOnYear"
+                            android:id="@+id/btnOneYear"
                             android:layout_weight="1"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -325,12 +311,12 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="end"
-                        android:layout_weight="0.75">
+                        android:layout_weight="0.85">
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                             android:layout_width="match_parent"
-                            android:layout_height="60dp"
+                            android:layout_height="50dp"
                             app:boxStrokeColor="@color/accent_blue"
                             app:hintTextColor="@color/accent_blue">
                             <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -338,6 +324,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
+                                android:padding="0dp"
                                 android:text="@string/sorting"
                                 android:textColor="@color/primary_text"/>
                         </com.google.android.material.textfield.TextInputLayout>
@@ -351,11 +338,29 @@
                     android:background="#1A000000"
                     android:layout_marginBottom="12dp"/>
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvReportSubAcivity"
+                <TextView
+                    android:id="@+id/tvLogNotExists"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tidak ada data log"
+                    android:textSize="@dimen/text_size_body_medium"
+                    android:textColor="@color/primary_text"
+                    android:layout_gravity="center"
+                    android:visibility="gone"/>
+
+                <LinearLayout
+                    android:id="@+id/llLog"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp" />
+                    android:orientation="vertical">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvLogSubAcivity"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="20dp" />
+                </LinearLayout>
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

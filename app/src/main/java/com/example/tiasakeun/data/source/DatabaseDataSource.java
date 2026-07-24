@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.example.tiasakeun.data.local.ActivityContract.ActivityEntry;
 import com.example.tiasakeun.data.local.SubActivityContract.SubActivityEntry;
@@ -17,11 +18,11 @@ import com.example.tiasakeun.data.model.Schedule;
 import com.example.tiasakeun.data.model.SubActivity;
 import com.example.tiasakeun.data.model.SubActivityLog;
 import com.example.tiasakeun.data.model.Type;
-import com.example.tiasakeun.ui.adapter.SubActivityReportAdapter;
 
 import java.util.ArrayList;
 
 public class DatabaseDataSource {
+    private final String TAG = "DatabaseDataSource";
     private SQLiteDatabase database;
     private final DbHelper dbHelper;
 
@@ -295,7 +296,8 @@ public class DatabaseDataSource {
         return category;
     }
 
-    public ArrayList<SubActivityLog> getSubActivityLogs(Long subActivityId) {
+    public ArrayList<SubActivityLog> getSubActivityLogs(Long subActivityId, String duration, String sorting) {
+        Log.i(TAG, "getSubActivityLogs: Start | subActivityId = " + subActivityId + " | duration = " + duration + " | sorting = " + sorting);
         ArrayList<SubActivityLog> subActivityLogs = new ArrayList<>();
 
         String query = "SELECT " +
@@ -311,7 +313,8 @@ public class DatabaseDataSource {
                 "INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID + " " +
                 "INNER JOIN " + TypeEntry.TABLE_NAME + " ON " + ActivityEntry.TABLE_NAME + "." + ActivityEntry.COLUMN_TYPE_ID + " = " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID + " " +
                 "WHERE " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + subActivityId + " " +
-                "ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " DESC";
+                (!duration.equals("") ? "AND " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', '" + duration + "') " : "") +
+                "ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + sorting;
 
         Cursor cursor = database.rawQuery(query, null);
 
@@ -329,6 +332,11 @@ public class DatabaseDataSource {
             } while (cursor.moveToNext());
         }
         cursor.close();
+
+        Log.i(TAG, "getSubActivityLogs: data | total = " + subActivityLogs.size());
+        for (SubActivityLog s : subActivityLogs) {
+            Log.i(TAG, s.toString());
+        }
         return subActivityLogs;
     }
 

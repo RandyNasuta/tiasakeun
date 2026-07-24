@@ -1,5 +1,8 @@
 package com.example.tiasakeun.ui.view;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -7,7 +10,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -30,7 +32,7 @@ import com.example.tiasakeun.R;
 import com.example.tiasakeun.data.model.SubActivity;
 import com.example.tiasakeun.data.model.SubActivityLog;
 import com.example.tiasakeun.data.source.DatabaseDataSource;
-import com.example.tiasakeun.ui.adapter.SubActivityReportAdapter;
+import com.example.tiasakeun.ui.adapter.SubActivityLogAdapter;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.card.MaterialCardView;
@@ -43,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.stream.Collectors;
+
+import com.example.tiasakeun.data.local.ActivityLogContract.ActivityLogEntry;
 
 public class DetailActActivity extends AppCompatActivity {
     private final String TAG = "DetailActActivity";
@@ -65,10 +69,12 @@ public class DetailActActivity extends AppCompatActivity {
     private TextView tvNoSubActivity;
 
     //Section 2 view group
-    private RecyclerView rvReportSubAcivity;
+    private RecyclerView rvLogSubAcivity;
     private MaterialButtonToggleGroup btnToggleDays;
-    private MaterialButton btnSorting;
-    private SubActivityReportAdapter subActivityReportAdapter;
+    private SubActivityLogAdapter subActivityLogAdapter;
+    private MaterialAutoCompleteTextView spSortSubActivity;
+    private TextView tvLogNotExists;
+    private LinearLayout llLog;
 
 
     //Variabel data
@@ -95,6 +101,8 @@ public class DetailActActivity extends AppCompatActivity {
 
     //Section 2
     private ArrayList<SubActivityLog> subActivityLogs = new ArrayList<>();
+    private final String[] sortingList = new String[]{"Terbaru", "Terlama", "Tertinggi", "Terendah"};
+    String durationChoosen, sortingChoosen;
 
 
     //Database
@@ -117,11 +125,13 @@ public class DetailActActivity extends AppCompatActivity {
         tvNoSubActivity = findViewById(R.id.tvNoSubActivity);
 
         //Section 2 view group
-        rvReportSubAcivity = findViewById(R.id.rvReportSubAcivity);
-        rvReportSubAcivity.setLayoutManager(new LinearLayoutManager(this));
-        rvReportSubAcivity.addItemDecoration(new DividerItemDecoration(rvReportSubAcivity.getContext(), new LinearLayoutManager(this).getOrientation()));
+        rvLogSubAcivity = findViewById(R.id.rvLogSubAcivity);
+        rvLogSubAcivity.setLayoutManager(new LinearLayoutManager(this));
+        rvLogSubAcivity.addItemDecoration(new DividerItemDecoration(rvLogSubAcivity.getContext(), new LinearLayoutManager(this).getOrientation()));
         btnToggleDays = findViewById(R.id.btnToggleDays);
-        btnSorting = findViewById(R.id.btnSorting);
+        spSortSubActivity = findViewById(R.id.spSortSubActivity);
+        tvLogNotExists = findViewById(R.id.tvLogNotExists);
+        llLog = findViewById(R.id.llLog);
     }
 
     @Override
@@ -148,28 +158,40 @@ public class DetailActActivity extends AppCompatActivity {
         subActivity = db.getSubActivityById(subActivityId);
         categoryType = db.getCategoryTypeById(activityId);
         subActivities.addAll(db.getSubActivitiesByActivityId(activityId, 0, categoryType));
-        subActivityLogs.addAll(db.getSubActivityLogs(subActivityId));
+
+        durationChoosen = "1 day";
+        sortingChoosen = ActivityLogEntry.COLUMN_LOG_DATE + " DESC";
+        subActivityLogs.addAll(db.getSubActivityLogs(subActivityId, "-1 day", sortingChoosen));
+
+        //Cek jika data log nya kosong
+        if (subActivityLogs.isEmpty()) {
+            llLog.setVisibility(GONE);
+            tvLogNotExists.setVisibility(VISIBLE);
+        } else {
+            llLog.setVisibility(VISIBLE);
+            tvLogNotExists.setVisibility(GONE);
+        }
 
         if (subActivities.isEmpty()) {
-            llTimer.setVisibility(View.GONE);
-            llQuantity.setVisibility(View.GONE);
-            btnFinish.setVisibility(View.GONE);
-            tvNoSubActivity.setVisibility(View.VISIBLE);
+            llTimer.setVisibility(GONE);
+            llQuantity.setVisibility(GONE);
+            btnFinish.setVisibility(GONE);
+            tvNoSubActivity.setVisibility(VISIBLE);
         } else {
             Log.i(TAG, "categoryType: " + categoryType);
             if (categoryType.equals("Waktu")) {
-                llTimer.setVisibility(View.VISIBLE);
-                llQuantity.setVisibility(View.GONE);
+                llTimer.setVisibility(VISIBLE);
+                llQuantity.setVisibility(GONE);
             } else {
-                llTimer.setVisibility(View.GONE);
-                llQuantity.setVisibility(View.VISIBLE);
+                llTimer.setVisibility(GONE);
+                llQuantity.setVisibility(VISIBLE);
             }
         }
         db.close();
 
-        //Inisialisasi adapter sub activity report
-        subActivityReportAdapter = new SubActivityReportAdapter(subActivityLogs, DetailActActivity.this);
-        rvReportSubAcivity.setAdapter(subActivityReportAdapter);
+        //Inisialisasi adapter sub activity log
+        subActivityLogAdapter = new SubActivityLogAdapter(subActivityLogs, DetailActActivity.this);
+        rvLogSubAcivity.setAdapter(subActivityLogAdapter);
 
         initializeSpinner();
         initializeProgressValue();
@@ -311,10 +333,10 @@ public class DetailActActivity extends AppCompatActivity {
                             initializeSpinner();
                         } else {
                             spSubActivity.setText("Tidak ada aktivitas hari ini", false);
-                            llTimer.setVisibility(View.GONE);
-                            llQuantity.setVisibility(View.GONE);
-                            btnFinish.setVisibility(View.GONE);
-                            tvNoSubActivity.setVisibility(View.VISIBLE);
+                            llTimer.setVisibility(GONE);
+                            llQuantity.setVisibility(GONE);
+                            btnFinish.setVisibility(GONE);
+                            tvNoSubActivity.setVisibility(VISIBLE);
                         }
                     }
                 }
@@ -395,8 +417,68 @@ public class DetailActActivity extends AppCompatActivity {
         });
 
         //Section 2
-        btnSorting.setOnClickListener(view -> {
+        ArrayAdapter<String> listSorting = new ArrayAdapter<>(DetailActActivity.this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, sortingList);
+        spSortSubActivity.setAdapter(listSorting);
 
+        spSortSubActivity.setOnItemClickListener((adapterView, view, i, l) -> {
+            if (sortingList[i].equals("Terbaru") || sortingList[i].equals("Tertinggi")) {
+                if (sortingList[i].equals("Terbaru")) {
+                    sortingChoosen = ActivityLogEntry.COLUMN_LOG_DATE + " DESC";
+                } else {
+                    sortingChoosen = ActivityLogEntry.COLUMN_VALUE + " DESC";
+                }
+            } else {
+                if (sortingList[i].equals("Terlama")) {
+                    sortingChoosen = ActivityLogEntry.COLUMN_LOG_DATE + " ASC";
+                } else {
+                    sortingChoosen = ActivityLogEntry.COLUMN_VALUE + " ASC";
+                }
+            }
+
+            db.open();
+            subActivityLogs = db.getSubActivityLogs(subActivityId, durationChoosen, sortingChoosen);
+            subActivityLogAdapter.setSubActivityLogs(subActivityLogs);
+
+            if (subActivityLogs.isEmpty()) {
+                llLog.setVisibility(GONE);
+                tvLogNotExists.setVisibility(VISIBLE);
+            } else {
+                llLog.setVisibility(VISIBLE);
+                tvLogNotExists.setVisibility(GONE);
+            }
+            db.close();
+        });
+
+        btnToggleDays.addOnButtonCheckedListener((materialButtonToggleGroup, chekedId, isChecked) -> {
+            db.open();
+            if (isChecked) {
+                if (chekedId == R.id.btnOneDay) {
+                    subActivityLogs = db.getSubActivityLogs(subActivityId, "-1 day", sortingChoosen);
+                    durationChoosen = "-1 day";
+                } else if (chekedId == R.id.btnOneWeek) {
+                    subActivityLogs = db.getSubActivityLogs(subActivityId, "-7 day", sortingChoosen);
+                    durationChoosen = "-7 day";
+                } else if (chekedId == R.id.btnOneMonth) {
+                    subActivityLogs = db.getSubActivityLogs(subActivityId, "-30 day", sortingChoosen);
+                    durationChoosen = "-30 day";
+                } else if (chekedId == R.id.btnOneYear) {
+                    subActivityLogs = db.getSubActivityLogs(subActivityId, "-365 day", sortingChoosen);
+                    durationChoosen = "-365 day";
+                } else  {
+                    subActivityLogs = db.getSubActivityLogs(subActivityId, "", sortingChoosen);
+                    durationChoosen = "";
+                }
+                subActivityLogAdapter.setSubActivityLogs(subActivityLogs);
+
+                if (subActivityLogs.isEmpty()) {
+                    llLog.setVisibility(GONE);
+                    tvLogNotExists.setVisibility(VISIBLE);
+                } else {
+                    llLog.setVisibility(VISIBLE);
+                    tvLogNotExists.setVisibility(GONE);
+                }
+            }
+            db.close();
         });
 
         getOnBackPressedDispatcher().addCallback(this, callback);
@@ -497,7 +579,6 @@ public class DetailActActivity extends AppCompatActivity {
                 db.close();
             }
         }
-
 
         isTimerRunning = false;
         btnPlayPauseTimer.setIconResource(R.drawable.outline_autoplay_24);

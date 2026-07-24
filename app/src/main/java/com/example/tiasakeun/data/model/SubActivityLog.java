@@ -77,4 +77,17 @@ public class SubActivityLog {
     public void setUnitName(String unitName) {
         this.unitName = unitName;
     }
+
+    @Override
+    public String toString() {
+        return "SubActivityLog{" +
+                "id=" + id +
+                ", value=" + value +
+                ", logDate='" + logDate + '\'' +
+                ", subActivityId=" + subActivityId +
+                ", subActivityName='" + subActivityName + '\'' +
+                ", categoryType='" + categoryType + '\'' +
+                ", unitName='" + unitName + '\'' +
+                '}';
+    }
 }
