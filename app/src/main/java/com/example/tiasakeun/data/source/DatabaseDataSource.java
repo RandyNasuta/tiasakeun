@@ -20,6 +20,7 @@ import com.example.tiasakeun.data.model.SubActivityLog;
 import com.example.tiasakeun.data.model.Type;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public class DatabaseDataSource {
     private final String TAG = "DatabaseDataSource";
@@ -313,7 +314,7 @@ public class DatabaseDataSource {
                 "INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID + " " +
                 "INNER JOIN " + TypeEntry.TABLE_NAME + " ON " + ActivityEntry.TABLE_NAME + "." + ActivityEntry.COLUMN_TYPE_ID + " = " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID + " " +
                 "WHERE " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + subActivityId + " " +
-                (!duration.equals("") ? "AND " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', '" + duration + "') " : "") +
+                (!duration.equals("") ? "AND " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', 'localtime', '" + duration + "') " : "") +
                 "ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + sorting;
 
         Cursor cursor = database.rawQuery(query, null);
@@ -338,6 +339,35 @@ public class DatabaseDataSource {
             Log.i(TAG, s.toString());
         }
         return subActivityLogs;
+    }
+
+    public LinkedHashMap<String, Long> getDailyChartSummary(Long subActivityId, String duration) {
+        LinkedHashMap<String, Long> summary = new LinkedHashMap<>();
+
+        String dateFilter = "";
+        if (!duration.isEmpty()) {
+            dateFilter = " AND " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', 'localtime', '" + duration + "')";
+        }
+
+        String query = "SELECT date(" + ActivityLogEntry.COLUMN_LOG_DATE + ") as log_day, " +
+                "SUM(" + ActivityLogEntry.COLUMN_VALUE + ") as total_value " +
+                "FROM " + ActivityLogEntry.TABLE_NAME + " " +
+                "WHERE " + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + subActivityId + " " +
+                dateFilter +
+                " GROUP BY log_day " +
+                " ORDER BY log_day ASC";
+
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do{
+                String date = cursor.getString(0);
+                long totalValue = cursor.getLong(1);
+                summary.put(date, totalValue);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return summary;
     }
 
     //UPDATE

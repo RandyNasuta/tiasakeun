@@ -6,6 +6,7 @@ import static android.view.View.VISIBLE;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -33,6 +35,12 @@ import com.example.tiasakeun.data.model.SubActivity;
 import com.example.tiasakeun.data.model.SubActivityLog;
 import com.example.tiasakeun.data.source.DatabaseDataSource;
 import com.example.tiasakeun.ui.adapter.SubActivityLogAdapter;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.card.MaterialCardView;
@@ -41,9 +49,14 @@ import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.example.tiasakeun.data.local.ActivityLogContract.ActivityLogEntry;
@@ -75,10 +88,10 @@ public class DetailActActivity extends AppCompatActivity {
     private MaterialAutoCompleteTextView spSortSubActivity;
     private TextView tvLogNotExists;
     private LinearLayout llLog;
+    private BarChart bcActivityLog;
 
 
     //Variabel data
-
     //Section 1
     private long subActivityId = 0L;
     private long activityId = 0L;
@@ -102,8 +115,7 @@ public class DetailActActivity extends AppCompatActivity {
     //Section 2
     private ArrayList<SubActivityLog> subActivityLogs = new ArrayList<>();
     private final String[] sortingList = new String[]{"Terbaru", "Terlama", "Tertinggi", "Terendah"};
-    String durationChoosen, sortingChoosen;
-
+    private String durationChoosen, sortingChoosen;
 
     //Database
     private DatabaseDataSource db = null;
@@ -132,8 +144,10 @@ public class DetailActActivity extends AppCompatActivity {
         spSortSubActivity = findViewById(R.id.spSortSubActivity);
         tvLogNotExists = findViewById(R.id.tvLogNotExists);
         llLog = findViewById(R.id.llLog);
+        bcActivityLog = findViewById(R.id.bcActivityLog);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,9 +173,10 @@ public class DetailActActivity extends AppCompatActivity {
         categoryType = db.getCategoryTypeById(activityId);
         subActivities.addAll(db.getSubActivitiesByActivityId(activityId, 0, categoryType));
 
-        durationChoosen = "1 day";
+        durationChoosen = "-1 day";
         sortingChoosen = ActivityLogEntry.COLUMN_LOG_DATE + " DESC";
-        subActivityLogs.addAll(db.getSubActivityLogs(subActivityId, "-1 day", sortingChoosen));
+        subActivityLogs.addAll(db.getSubActivityLogs(subActivityId, durationChoosen, sortingChoosen));
+        setupBarChart();
 
         //Cek jika data log nya kosong
         if (subActivityLogs.isEmpty()) {
@@ -274,7 +289,7 @@ public class DetailActActivity extends AppCompatActivity {
                         db.open();
                         if (categoryType.equals("Waktu")) {
                             if (elapsedTimeInSeconds > 0 ) {
-                                String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+                                String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
                                 long createLogActivity = db.createLogActivity(subActivityId, elapsedTimeInSeconds, currentDate);
 
                                 if (createLogActivity != -1) {
@@ -293,7 +308,7 @@ public class DetailActActivity extends AppCompatActivity {
                                 Toast.makeText(DetailActActivity.this, "Gagal menyimpan data", Toast.LENGTH_LONG).show();
                             }
                         } else {
-                            String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+                            String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
                             long finalQuantity = etQuantityTotalProgress.getText().toString().isEmpty() ? 0L : Long.parseLong(etQuantityTotalProgress.getText().toString());
                             long createLogActivity = db.createLogActivity(subActivityId, finalQuantity, currentDate);
 
@@ -384,7 +399,7 @@ public class DetailActActivity extends AppCompatActivity {
                         long targetValue = subActivity.getTargetValue();
 
                         db.open();
-                        String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+                        String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
                         long createLogActivity = db.createLogActivity(subActivityId, Long.parseLong(totalInput), currentDate);
 
                         if (createLogActivity != -1) {
@@ -479,6 +494,7 @@ public class DetailActActivity extends AppCompatActivity {
                 }
             }
             db.close();
+            setupBarChart();
         });
 
         getOnBackPressedDispatcher().addCallback(this, callback);
@@ -504,6 +520,7 @@ public class DetailActActivity extends AppCompatActivity {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void changeSubActivity(SubActivity selectedSubActivity) {
         Log.i(TAG, "changeSubActivity: Mulai proses perubahan sub activity");
         //Kategorikan berdasarkan tipe progressnya - waktu atau jumlah
@@ -520,6 +537,7 @@ public class DetailActActivity extends AppCompatActivity {
         Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
 
         initializeProgressValue();
+        setupBarChart();
     }
 
     private void onStartTimer() {
@@ -564,7 +582,7 @@ public class DetailActActivity extends AppCompatActivity {
         if (elapsedTimeInSeconds > 0) {
             try {
                 db.open();
-                String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+                String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
                 long createLogActivity = db.createLogActivity(subActivityId, elapsedTimeInSeconds, currentDate);
 
                 if (createLogActivity != -1) {
@@ -621,6 +639,51 @@ public class DetailActActivity extends AppCompatActivity {
         }
 
         db.close();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void setupBarChart() {
+        db.open();
+        LinkedHashMap<String, Long> dailyData = db.getDailyChartSummary(subActivityId, durationChoosen);
+        db.close();
+
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        final ArrayList<String> xLabels = new ArrayList<>();
+
+        //Atur format date string yang diterima
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault());
+        //Atur format yang diinginkan
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault());
+
+
+        int index = 0;
+        for (Map.Entry<String, Long> entry : dailyData.entrySet()) {
+            entries.add(new BarEntry(index, entry.getValue()));
+
+            //Ubah ke obyek LocalDateTime
+            LocalDate dateTime = LocalDate.parse(entry.getKey(), inputFormatter);
+            xLabels.add(dateTime.format(outputFormatter));
+            index++;
+        }
+
+        BarDataSet dataSet = new BarDataSet(entries, "Total Harian");
+        dataSet.setColor(getResources().getColor(R.color.accent_blue));
+        dataSet.setValueTextSize(10f);
+
+        BarData barData = new BarData(dataSet);
+        bcActivityLog.setData(barData);
+
+        //Format sumbu x
+        XAxis xAxis = bcActivityLog.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(xLabels));
+        xAxis.setGranularity(1f);
+        xAxis.setDrawGridLines(false);
+
+        bcActivityLog.getDescription().setEnabled(false);
+        bcActivityLog.getAxisRight().setEnabled(false);
+        bcActivityLog.animateY(1000);
+        bcActivityLog.invalidate();
     }
 
     @Override
