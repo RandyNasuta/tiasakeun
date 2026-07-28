@@ -394,7 +394,7 @@ public class DatabaseDataSource {
 
     //DELETE
     public boolean deleteActivityLogs(long subActivityId) {
-        String whereClause = ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ?";
+        String whereClause = ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ? AND date(" + ActivityLogEntry.COLUMN_LOG_DATE + ") = date('now', 'localtime')";
         String[] whereArgs = {String.valueOf(subActivityId)};
         int rowsAffected = database.delete(ActivityLogEntry.TABLE_NAME, whereClause, whereArgs);
         return rowsAffected > 0;

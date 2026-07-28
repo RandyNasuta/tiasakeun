@@ -11,8 +11,10 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -173,19 +175,12 @@ public class DetailActActivity extends AppCompatActivity {
         categoryType = db.getCategoryTypeById(activityId);
         subActivities.addAll(db.getSubActivitiesByActivityId(activityId, 0, categoryType));
 
-        durationChoosen = "-1 day";
-        sortingChoosen = ActivityLogEntry.COLUMN_LOG_DATE + " DESC";
+        //Section untuk mengatur awal dari log aktivitas
+        db.open();
+        subActivityLogs.clear();
         subActivityLogs.addAll(db.getSubActivityLogs(subActivityId, durationChoosen, sortingChoosen));
-        setupBarChart();
-
-        //Cek jika data log nya kosong
-        if (subActivityLogs.isEmpty()) {
-            llLog.setVisibility(GONE);
-            tvLogNotExists.setVisibility(VISIBLE);
-        } else {
-            llLog.setVisibility(VISIBLE);
-            tvLogNotExists.setVisibility(GONE);
-        }
+        db.close();
+        initSecondSection(true);
 
         if (subActivities.isEmpty()) {
             llTimer.setVisibility(GONE);
@@ -204,19 +199,30 @@ public class DetailActActivity extends AppCompatActivity {
         }
         db.close();
 
-        //Inisialisasi adapter sub activity log
-        subActivityLogAdapter = new SubActivityLogAdapter(subActivityLogs, DetailActActivity.this);
-        rvLogSubAcivity.setAdapter(subActivityLogAdapter);
-
         initializeSpinner();
         initializeProgressValue();
 
         //Section 1
-
         spSubActivity.setOnItemClickListener((adapterView, view, i, l) -> {
             SubActivity selectedSubActivity = subActivities.get(i);
+
+            //Berubah jika hanya sub activity-nya berbeda
+            Log.i(TAG, "onItemSelected: sub activity yang dipilih: " + selectedSubActivity.getId());
+            Log.i(TAG, "onItemSelected: sub activity yang lama: " + subActivityId);
             if (selectedSubActivity.getId() != subActivityId) {
+                //Untuk mengatur widget progress
+                //Atur sub activity id yang terbaru
+                subActivityId = selectedSubActivity.getId();
+
                 changeSubActivity(subActivities.get(i));
+
+                //Reset filter tanggal
+                Log.i(TAG, "onItemSelected: subActivityId baru: " + subActivityId);
+                db.open();
+                subActivityLogs.clear();
+                subActivityLogs.addAll(db.getSubActivityLogs(subActivityId, durationChoosen, sortingChoosen));
+                db.close();
+                initSecondSection(false);
             }
         });
 
@@ -500,6 +506,34 @@ public class DetailActActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void initSecondSection(boolean isFirstInit) {
+        durationChoosen = "-1 day";
+        sortingChoosen = ActivityLogEntry.COLUMN_LOG_DATE + " DESC";
+        spSortSubActivity.setText("Terbaru", false);
+
+        //Cek jika data log nya kosong
+        if (subActivityLogs.isEmpty()) {
+            llLog.setVisibility(GONE);
+            tvLogNotExists.setVisibility(VISIBLE);
+        } else {
+            llLog.setVisibility(VISIBLE);
+            tvLogNotExists.setVisibility(GONE);
+        }
+
+        //Inisialisasi adapter sub activity log
+        btnToggleDays.clearChecked();
+        if (isFirstInit) {
+            subActivityLogAdapter = new SubActivityLogAdapter(subActivityLogs, DetailActActivity.this);
+            rvLogSubAcivity.setAdapter(subActivityLogAdapter);
+        } else {
+            subActivityLogAdapter.setSubActivityLogs(subActivityLogs);
+        }
+
+        //Atur chart sub activity
+        setupBarChart();
+    }
+
     private void initializeSpinner() {
         //Masukkan data ke spinner dan progress sub activity
         ArrayAdapter<String> subActivityArrayAdapter = new ArrayAdapter<>(
@@ -531,13 +565,11 @@ public class DetailActActivity extends AppCompatActivity {
         }
 
         //Ambil data sub activity terbaru
-        subActivityId = selectedSubActivity.getId();
         activityId = selectedSubActivity.getActivityId();
         subActivity = selectedSubActivity;
         Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
 
         initializeProgressValue();
-        setupBarChart();
     }
 
     private void onStartTimer() {
@@ -643,6 +675,7 @@ public class DetailActActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void setupBarChart() {
+        Log.i(TAG, "setupBarChart: run");
         db.open();
         LinkedHashMap<String, Long> dailyData = db.getDailyChartSummary(subActivityId, durationChoosen);
         db.close();
@@ -705,6 +738,7 @@ public class DetailActActivity extends AppCompatActivity {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onResume() {
         super.onResume();
@@ -721,15 +755,44 @@ public class DetailActActivity extends AppCompatActivity {
 
             long timeAwayInMillis = System.currentTimeMillis() - timeExited;
             timeLeftInMillis = savedTimeLeft - timeAwayInMillis;
+
+            //Hitung waktu berjalan normal jika timer belum habis
             elapsedTimeInSeconds = savedElapsedTime + (timeAwayInMillis / 1000);
             sharedPreferences.edit().clear().apply();
 
             if (timeLeftInMillis <= 0) {
                 timeLeftInMillis = 0;
                 isTimerRunning = false;
-                String timerView = String.format("%02d:%02d:%02d", 00, 00, 00);
+
+                String timerView = String.format(Locale.getDefault(), "%02d:%02d:%02d", 00, 00, 00);
                 tvTimer.setText(timerView);
                 Toast.makeText(this, "Waktu sudah habis", Toast.LENGTH_SHORT).show();
+
+                //Hitung waktu aktual yang dihabiskan: waktu yang telah berjalan sebelum keluar
+                //ditambah sisa waktu yang dihabiskan di background
+                long actualTimeSpent = savedElapsedTime + (savedTimeLeft / 1000);
+
+                if (actualTimeSpent > 0) {
+                    try {
+                        db.open();
+                        String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+                        long createLogActivity = db.createLogActivity(subActivityId, actualTimeSpent, currentDate);
+
+                        if (createLogActivity != -1) {
+                            Log.i(TAG, "onResume: Data background timer berhasil disimpan (" + actualTimeSpent + " detik");
+
+                            subActivityLogs.clear();
+                            subActivityLogs.addAll(db.getSubActivityLogs(subActivityId, durationChoosen, sortingChoosen));
+                            initSecondSection(false);
+                        } else {
+                            Toast.makeText(this, "Gagal menyimpan data log", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "onResume: DB Error: " + e.getMessage());
+                    } finally {
+                        db.close();
+                    }
+                }
             } else {
                 isTimerRunning = true;
                 onStartTimer();
