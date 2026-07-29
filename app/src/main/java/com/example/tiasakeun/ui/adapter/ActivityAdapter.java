@@ -76,7 +76,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
         db.open();
         String category = db.getTypeCategory(activity.getId());
-        subActivities = db.getSubActivitiesByActivityId(activity.getId(), 0, category);
+        subActivities = db.getSubActivitiesToday(activity.getId(), 0, category);
         db.close();
 
         subActivityAdapter = new SubActivityAdapter(subActivities, context);

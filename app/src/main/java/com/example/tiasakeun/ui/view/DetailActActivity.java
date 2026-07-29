@@ -11,10 +11,8 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -52,7 +50,6 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -173,13 +170,9 @@ public class DetailActActivity extends AppCompatActivity {
         db.open();
         subActivity = db.getSubActivityById(subActivityId);
         categoryType = db.getCategoryTypeById(activityId);
-        subActivities.addAll(db.getSubActivitiesByActivityId(activityId, 0, categoryType));
+        subActivities.addAll(db.getSubActivitiesToday(activityId, 0, categoryType));
 
         //Section untuk mengatur awal dari log aktivitas
-        db.open();
-        subActivityLogs.clear();
-        subActivityLogs.addAll(db.getSubActivityLogs(subActivityId, durationChoosen, sortingChoosen));
-        db.close();
         initSecondSection(true);
 
         if (subActivities.isEmpty()) {
@@ -212,17 +205,11 @@ public class DetailActActivity extends AppCompatActivity {
             if (selectedSubActivity.getId() != subActivityId) {
                 //Untuk mengatur widget progress
                 //Atur sub activity id yang terbaru
-                subActivityId = selectedSubActivity.getId();
-
                 changeSubActivity(subActivities.get(i));
 
                 //Reset filter tanggal
                 Log.i(TAG, "onItemSelected: subActivityId baru: " + subActivityId);
-                db.open();
-                subActivityLogs.clear();
-                subActivityLogs.addAll(db.getSubActivityLogs(subActivityId, durationChoosen, sortingChoosen));
-                db.close();
-                initSecondSection(false);
+                initSecondSection(true);
             }
         });
 
@@ -503,6 +490,8 @@ public class DetailActActivity extends AppCompatActivity {
             setupBarChart();
         });
 
+        //Hapus jika tidak terpakai
+//        injectDummyForTesting();
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
@@ -511,6 +500,11 @@ public class DetailActActivity extends AppCompatActivity {
         durationChoosen = "-1 day";
         sortingChoosen = ActivityLogEntry.COLUMN_LOG_DATE + " DESC";
         spSortSubActivity.setText("Terbaru", false);
+
+        db.open();
+        subActivityLogs.clear();
+        subActivityLogs.addAll(db.getSubActivityLogs(subActivityId, durationChoosen, sortingChoosen));
+        db.close();
 
         //Cek jika data log nya kosong
         if (subActivityLogs.isEmpty()) {
@@ -565,6 +559,7 @@ public class DetailActActivity extends AppCompatActivity {
         }
 
         //Ambil data sub activity terbaru
+        subActivityId = selectedSubActivity.getId();
         activityId = selectedSubActivity.getActivityId();
         subActivity = selectedSubActivity;
         Log.i(TAG, "subActivityId: " + subActivityId + " | activityId: " + activityId);
@@ -691,7 +686,11 @@ public class DetailActActivity extends AppCompatActivity {
 
         int index = 0;
         for (Map.Entry<String, Long> entry : dailyData.entrySet()) {
-            entries.add(new BarEntry(index, entry.getValue()));
+            if (categoryType.equals("Waktu")) {
+                entries.add(new BarEntry(index, entry.getValue() / 60f));
+            } else {
+                entries.add(new BarEntry(index, entry.getValue()));
+            }
 
             //Ubah ke obyek LocalDateTime
             LocalDate dateTime = LocalDate.parse(entry.getKey(), inputFormatter);
@@ -772,18 +771,15 @@ public class DetailActActivity extends AppCompatActivity {
                 //ditambah sisa waktu yang dihabiskan di background
                 long actualTimeSpent = savedElapsedTime + (savedTimeLeft / 1000);
 
+                long createLogActivity = 0L;
                 if (actualTimeSpent > 0) {
                     try {
                         db.open();
                         String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-                        long createLogActivity = db.createLogActivity(subActivityId, actualTimeSpent, currentDate);
+                        createLogActivity = db.createLogActivity(subActivityId, actualTimeSpent, currentDate);
 
                         if (createLogActivity != -1) {
                             Log.i(TAG, "onResume: Data background timer berhasil disimpan (" + actualTimeSpent + " detik");
-
-                            subActivityLogs.clear();
-                            subActivityLogs.addAll(db.getSubActivityLogs(subActivityId, durationChoosen, sortingChoosen));
-                            initSecondSection(false);
                         } else {
                             Toast.makeText(this, "Gagal menyimpan data log", Toast.LENGTH_SHORT).show();
                         }
@@ -791,6 +787,10 @@ public class DetailActActivity extends AppCompatActivity {
                         Log.e(TAG, "onResume: DB Error: " + e.getMessage());
                     } finally {
                         db.close();
+                    }
+
+                    if (createLogActivity != -1) {
+                        initSecondSection(true);
                     }
                 }
             } else {
@@ -812,5 +812,31 @@ public class DetailActActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy run");
+    }
+
+    private void injectDummyForTesting() {
+        db.open();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+
+        int[] daysAgo = {0, 2, 15, 100};
+
+        for (int i : daysAgo) {
+            long pastTimeMillis = System.currentTimeMillis() - (i * 24L * 60L * 60L * 1000L);
+            String pastDate = sdf.format(new Date(pastTimeMillis));
+
+            long randomValue;
+            if (categoryType.equals("Waktu")) {
+                randomValue = (long) (Math.random() * 1800) + 900;
+            } else {
+                randomValue = (long) (Math.random() * 40) + 10;
+            }
+            db.createLogActivity(subActivityId, randomValue, pastDate);
+        }
+
+        db.close();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            initSecondSection(false);
+        }
     }
 }

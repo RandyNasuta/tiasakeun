@@ -73,8 +73,9 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
         String category = db.getTypeCategory(subActivity.getActivityId());
         db.close();
 
+        Log.i(TAG, "onBindViewHolder: current value: " + subActivity.getCurrentValue());
         if (category.equals("Waktu")) {
-            holder.tvSubProgress.setText(String.format("%s / %s %s", subActivity.getCurrentValue() % 3600 / 60, subActivity.getTargetValue() % 3600 / 60, subActivity.getUnitName()));
+            holder.tvSubProgress.setText(String.format("%s / %s %s", subActivity.getCurrentValue() / 60, subActivity.getTargetValue() / 60, subActivity.getUnitName()));
         } else {
             holder.tvSubProgress.setText(String.format("%s / %s %s", subActivity.getCurrentValue(), subActivity.getTargetValue(), subActivity.getUnitName()));
         }
@@ -334,7 +335,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
 
                                 subActivities.clear();
-                                subActivities.addAll(db.getSubActivitiesByActivityId(subActivity.getActivityId(), null, category));
+                                subActivities.addAll(db.getSubActivitiesToday(subActivity.getActivityId(), null, category));
                                 notifyDataSetChanged();
 
                                 dialog.dismiss();

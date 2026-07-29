@@ -118,7 +118,7 @@ public class DatabaseDataSource {
         return  activities;
     }
 
-    public ArrayList<SubActivity> getSubActivitiesByActivityId(Long activityId, Integer isCompleted, String categoryType) {
+    public ArrayList<SubActivity> getSubActivitiesToday(Long activityId, Integer isCompleted, String categoryType) {
         ArrayList<SubActivity> subActivities = new ArrayList<>();
         /**
          * Ambil data
@@ -131,6 +131,19 @@ public class DatabaseDataSource {
          * Type
          * Unit Name
          */
+        String todayFilter = "date(" + ActivityLogEntry.TABLE_NAME  + "." + ActivityLogEntry.COLUMN_LOG_DATE + ") > date('now', 'localtime')";
+        String currentValueQuery;
+
+        if (categoryType.equals("Waktu")) {
+            currentValueQuery = "IFNULL(" + "SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ")" + ", 0)";
+        } else {
+            currentValueQuery = "IFNULL((SELECT " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + " " +
+                                "FROM " + ActivityLogEntry.TABLE_NAME + " " +
+                                "WHERE " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " " +
+                                " AND " + ActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', 'localtime') " +
+                                "ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " DESC LIMIT 1), 0)";
+        }
+
         String query = "Select " +
                 SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID  + ", " +
                 SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_TITLE  + ", " +
@@ -140,15 +153,15 @@ public class DatabaseDataSource {
                 SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_ACTIVITY_ID + ", " +
                 ScheduleEntry.TABLE_NAME + "." + ScheduleEntry.COLUMN_TYPE + ", " +
                 TypeEntry.TABLE_NAME + "." +  TypeEntry.COLUMN_UNIT_NAME + ", " +
-                "IFNULL(" + ( categoryType.equals("Waktu") ? "SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ")" : ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE) + ", 0) AS current_value " +
-                " FROM " + SubActivityEntry.TABLE_NAME +
-                " INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID +
-                " INNER JOIN " + TypeEntry.TABLE_NAME + " ON " + ActivityEntry.COLUMN_TYPE_ID + " = " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID +
-                " INNER JOIN " + ScheduleEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_SCHEDULE_ID + " = " + ScheduleEntry.TABLE_NAME + "." + ScheduleEntry._ID +
-                " LEFT JOIN " + ActivityLogEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID +
-                " WHERE " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + activityId +
-                (isCompleted != null ? " AND " + SubActivityEntry.COLUMN_IS_COMPLETED + " = " + isCompleted : "") +
-                " GROUP BY " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID;
+                currentValueQuery + " AS current_value " + " " +
+                "FROM " + SubActivityEntry.TABLE_NAME + " " +
+                "INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID + " " +
+                "INNER JOIN " + TypeEntry.TABLE_NAME + " ON " + ActivityEntry.COLUMN_TYPE_ID + " = " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID + " " +
+                "INNER JOIN " + ScheduleEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_SCHEDULE_ID + " = " + ScheduleEntry.TABLE_NAME + "." + ScheduleEntry._ID + " " +
+                "LEFT JOIN " + ActivityLogEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " AND " + todayFilter + " " +
+                "WHERE " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + activityId +
+                (isCompleted != null ? " AND " + SubActivityEntry.COLUMN_IS_COMPLETED + " = " + isCompleted : "") + " " +
+                "GROUP BY " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID;
 
         Cursor cursor = database.rawQuery(query, null);
 
@@ -245,16 +258,19 @@ public class DatabaseDataSource {
         int progress = 0;
         String query;
 
+        String todayFilter = "date(" + ActivityLogEntry.TABLE_NAME  + "." + ActivityLogEntry.COLUMN_LOG_DATE + ") = date('now', 'localtime')";
         if (categoryType.equals("Waktu")) {
-            query = "Select SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ") FROM " + ActivityLogEntry.TABLE_NAME +
-                    " INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
-                    SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id;
+            query = "Select SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ") FROM " + ActivityLogEntry.TABLE_NAME + " " +
+                    "INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
+                    SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id + " AND " +
+                    todayFilter;
         } else {
             query = "Select " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + " FROM " + ActivityLogEntry.TABLE_NAME +
                     " INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
-                    SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id +
-                    " ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " DESC " +
-                    " LIMIT 1";
+                    SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id + " AND " +
+                    todayFilter + " " +
+                    "ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " DESC " +
+                    "LIMIT 1";
         }
 
         Cursor cursor = database.rawQuery(query, null);
