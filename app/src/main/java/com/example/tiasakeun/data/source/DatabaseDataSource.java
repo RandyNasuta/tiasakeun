@@ -409,6 +409,54 @@ public class DatabaseDataSource {
     }
 
     //DELETE
+    public boolean deleteActivity(long activityId) {
+        database.beginTransaction();
+
+        try {
+            String query = "SELECT " + SubActivityEntry._ID + " FROM " + SubActivityEntry.TABLE_NAME + " " +
+                    "WHERE " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = ? ";
+
+            Cursor cursor = database.rawQuery(query, new String[]{String.valueOf(activityId)});
+
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    long subActivityId = cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry._ID));
+
+                    database.delete(
+                            ActivityLogEntry.TABLE_NAME,
+                            ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ?",
+                            new String[]{String.valueOf(subActivityId)}
+                    );
+                }
+
+                cursor.close();
+            }
+
+            database.delete(
+                    SubActivityEntry.TABLE_NAME,
+                    SubActivityEntry.COLUMN_ACTIVITY_ID + " = ?",
+                    new String[]{String.valueOf(activityId)}
+            );
+
+            int rowAffected = database.delete(
+                    ActivityEntry.TABLE_NAME,
+                    ActivityEntry._ID + " = ?",
+                    new String[]{String.valueOf(activityId)}
+            );
+
+            if (rowAffected > 0) {
+                database.setTransactionSuccessful();
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            Log.e(TAG, "deleteActivity: " + e.getMessage());
+            return false;
+        } finally {
+            database.endTransaction();
+        }
+    }
+
     public boolean deleteActivityLogs(long subActivityId) {
         String whereClause = ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ? AND date(" + ActivityLogEntry.COLUMN_LOG_DATE + ") = date('now', 'localtime')";
         String[] whereArgs = {String.valueOf(subActivityId)};

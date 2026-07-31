@@ -95,6 +95,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                 View dialogView = LayoutInflater.from(view.getContext()).inflate(R.layout.dialog_add_sub_activity, null);
                 builder.setView(dialogView);
 
+                TextView tvTitleDialogSubActivity = dialogView.findViewById(R.id.tvTitleDialogSubActivity);
                 TextInputEditText etSubActivityTitle = dialogView.findViewById(R.id.etSubActivityTitle);
                 TextInputEditText etTotal = dialogView.findViewById(R.id.etTotal);
                 MaterialButton btnTotalMinus = dialogView.findViewById(R.id.btnTotalMinus);
@@ -110,6 +111,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                 TimePicker tpSpinner = dialogView.findViewById(R.id.tpSpinner);
                 tpSpinner.setIs24HourView(true);
 
+                tvTitleDialogSubActivity.setText("Ubah Aktivitas");
                 long tempHour = subActivity.getTargetValue() / 3600;
                 long tempMinute = (subActivity.getTargetValue() % 3600) / 60;
 
@@ -173,6 +175,10 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                 }
 
                 dialog.show();
+
+                dialog.setOnCancelListener(dialogInterface -> {
+                    tvTitleDialogSubActivity.setText(R.string.add_new_activity);
+                });
 
                 //Kondisi ketika checbox di checked atau unchecked
                 cbSchedule.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

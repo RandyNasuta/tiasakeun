@@ -34,6 +34,7 @@ import com.example.tiasakeun.data.source.DatabaseDataSource;
 import com.example.tiasakeun.ui.picker.DatePickerFragment;
 import com.example.tiasakeun.ui.picker.TimePickerFragment;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -337,6 +338,55 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                     holder.ivArrow.animate().rotation(180f).setDuration(300).start();
                 }
             }
+        });
+
+        holder.layoutHeader.setOnLongClickListener(view -> {
+
+            if (view.getTag() != null && (boolean) view.getTag()) {
+                return true;
+            }
+            view.setTag(true);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle("Hapus Aktivitas?");
+            builder.setMessage("Aktivitas yang dihapus akan menghapus semua kegiatan yang sudah dilakukan");
+            builder.setCancelable(true);
+            builder.setPositiveButton("Hapus", (dialogInterface, i) -> {
+               db.open();
+
+               try {
+                   boolean deleteData = db.deleteActivity(activity.getId());
+
+                   if (deleteData) {
+                       Toast.makeText(context.getApplicationContext(), "Aktivitas berhasil dihapus", Toast.LENGTH_SHORT).show();
+
+                       int currPos = activityList.indexOf(activity);
+                       if (currPos != -1) {
+                           activityList.remove(currPos);
+                           notifyItemRemoved(currPos);
+                       }
+                   } else {
+                       Toast.makeText(context.getApplicationContext(), "Aktivitas gagal dihapus", Toast.LENGTH_SHORT).show();
+                   }
+               } catch (Exception e) {
+                   Log.e(TAG, "onBindViewHolder: Gagal hapus data aktivitas: " + e.getMessage());
+               } finally {
+                   db.close();
+               }
+            });
+
+            builder.setNegativeButton("Batal", (dialogInterface, i) -> {
+                dialogInterface.dismiss();
+            });
+
+            builder.setOnDismissListener(dialogInterface -> {
+                view.setTag(false);
+            });
+
+            AlertDialog dialog = builder.create();
+
+            dialog.show();
+            return true;
         });
     }
 
