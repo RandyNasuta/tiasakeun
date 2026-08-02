@@ -21,7 +21,7 @@
             android:id="@+id/tvTitleDialogSubActivity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/add_new_sub_activity"
+            android:text="@string/edit_activity"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/primary_text"
@@ -111,99 +111,39 @@
                 android:backgroundTint="@color/accent_blue"/>
         </LinearLayout>
 
+
         <LinearLayout
-            android:id="@+id/llTargetValueTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp"
-            android:visibility="visible">
+            android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCreateSubActivity"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Target Durasi (Jam : Menit)"
-                android:textColor="@color/accent_blue"
-                android:textSize="12sp"
-                android:layout_marginStart="4dp"
-                android:layout_marginBottom="8dp" />
-            
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:elevation="0dp"
-                app:strokeWidth="1dp"
+                android:layout_weight="1"
+                android:text="@string/cancel"
+                android:textColor="@color/black"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 app:strokeColor="@color/accent_blue"
-                app:cardBackgroundColor="@android:color/transparent"
-                app:cardCornerRadius="4dp">
-                <TimePicker
-                    android:id="@+id/tpSpinner"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:timePickerMode="spinner"
-                    android:layout_gravity="center"
-                    android:paddingVertical="8dp"/>
-            </com.google.android.material.card.MaterialCardView>
+                app:strokeWidth="2dp"
+                android:paddingHorizontal="24dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="5dp"
+                tools:ignore="MissingConstraints"/>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCreateSubActivity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/update"
+                android:backgroundTint="@color/accent_blue"
+                android:paddingHorizontal="24dp"
+                android:layout_marginBottom="8dp"
+                tools:ignore="MissingConstraints"/>
 
         </LinearLayout>
 
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/cbSchedule"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:textColor="@color/primary_text"
-            android:backgroundTint="@color/accent_blue"
-            android:text="@string/schedule"
-            android:layout_marginBottom="8dp"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDateSubActivity"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/accent_blue"
-            android:text="@string/set_date"
-            android:paddingHorizontal="24dp"
-            tools:ignore="MissingConstraints"
-            android:layout_marginBottom="8dp"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnTimeSubActivity"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/accent_blue"
-            android:text="@string/set_time"
-            android:paddingHorizontal="24dp"
-            tools:ignore="MissingConstraints"
-            android:layout_marginBottom="8dp"/>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/spinnerScheduleLayout"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/schedule_date"
-            android:layout_marginBottom="8dp"
-            app:boxStrokeColor="@color/accent_blue"
-            app:hintTextColor="@color/accent_blue">
-            <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                android:id="@+id/spinnerSchedule"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="none"
-                android:textColor="@color/primary_text"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCreateSubActivity"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/create"
-            android:backgroundTint="@color/accent_blue"
-            android:paddingHorizontal="24dp"
-            android:layout_marginBottom="8dp"
-            tools:ignore="MissingConstraints"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

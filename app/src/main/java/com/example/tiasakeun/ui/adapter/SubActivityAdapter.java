@@ -111,7 +111,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                 TimePicker tpSpinner = dialogView.findViewById(R.id.tpSpinner);
                 tpSpinner.setIs24HourView(true);
 
-                tvTitleDialogSubActivity.setText("Ubah Aktivitas");
+                tvTitleDialogSubActivity.setText(R.string.edit_sub_activity);
                 long tempHour = subActivity.getTargetValue() / 3600;
                 long tempMinute = (subActivity.getTargetValue() % 3600) / 60;
 

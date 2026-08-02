@@ -1,9 +1,15 @@
 package com.example.tiasakeun.ui.view;
 
 import android.app.AlertDialog;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -11,11 +17,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -87,6 +95,155 @@ public class MainActivity extends AppCompatActivity {
         refreshDataAct();
 
         fabAddActivity.setOnClickListener(view -> showDialogCreateActivity());
+
+        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper
+                .SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+            @Override
+            public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
+                return 0.35f;
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                Activity activity = activityList.get(position);
+
+                if (direction == ItemTouchHelper.LEFT) {
+                    if (viewHolder.itemView.getTag() != null && (boolean) viewHolder.itemView.getTag()) {
+                        return;
+                    }
+                    viewHolder.itemView.setTag(true);
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("Hapus Aktivitas?");
+                    builder.setMessage("Aktivitas yang dihapus akan menghapus semua kegiatan yang sudah dilakukan");
+                    builder.setCancelable(true);
+                    builder.setPositiveButton("Hapus", (dialogInterface, i) -> {
+                        db.open();
+
+                        try {
+                            boolean deleteData = db.deleteActivity(activity.getId());
+
+                            if (deleteData) {
+                                Toast.makeText(MainActivity.this, "Aktivitas berhasil dihapus", Toast.LENGTH_SHORT).show();
+
+                                int currPos = activityList.indexOf(activity);
+                                if (currPos != -1) {
+                                    activityList.remove(currPos);
+                                    activityAdapter.notifyItemRemoved(currPos);
+                                }
+                            } else {
+                                Toast.makeText(MainActivity.this, "Aktivitas gagal dihapus", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "onBindViewHolder: Gagal hapus data aktivitas: " + e.getMessage());
+                        } finally {
+                            db.close();
+                        }
+                    });
+
+                    builder.setNegativeButton("Batal", (dialogInterface, i) -> {
+                        dialogInterface.dismiss();
+
+                        //Mengembalikkan item yang sudah hilang dari layar
+                        activityAdapter.notifyItemChanged(position);
+                    });
+
+                    builder.setOnDismissListener(dialogInterface -> {
+                        viewHolder.itemView.setTag(false);
+                    });
+
+                    AlertDialog dialog = builder.create();
+
+                    dialog.show();
+                } else if (direction == ItemTouchHelper.RIGHT) {
+                    if (position == RecyclerView.NO_POSITION) return;
+
+                    if (viewHolder.itemView.getTag() != null && (boolean) viewHolder.itemView.getTag()) {
+                        return;
+                    }
+                    viewHolder.itemView.setTag(true);
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    View dialogView = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_edit_activity, null);;
+                    builder.setView(dialogView);
+
+                    AlertDialog dialog = builder.create();
+                    if (dialog.getWindow() != null) {
+                        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+                    }
+                    dialog.show();
+
+                    dialog.setOnCancelListener(dialogInterface -> {
+                        viewHolder.itemView.setTag(false);
+                        activityAdapter.notifyItemChanged(position);
+                        dialog.dismiss();
+                    });
+                }
+            }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+
+                View itemView = viewHolder.itemView;
+                int itemHeight = itemView.getBottom() - itemView.getTop();
+
+                Paint paint = new Paint();
+                paint.setAntiAlias(true);
+
+                ColorDrawable background;
+                Drawable icon;
+
+                float cornerRadius = 24f;
+
+                //Swipe ke kanan
+                if (dX > 0) {
+                    paint.setColor(Color.parseColor("#2196F3"));
+
+                    RectF backgroundRect = new RectF(itemView.getLeft(), itemView.getTop(), itemView.getLeft() + dX, itemView.getBottom());
+                    c.drawRoundRect(backgroundRect, cornerRadius, cornerRadius, paint);
+
+                    icon = ContextCompat.getDrawable(MainActivity.this, R.drawable.baseline_edit_24);
+                    if (icon != null) {
+                        icon.setTint(Color.WHITE);
+                        int iconTop = itemView.getTop() + (itemHeight - icon.getIntrinsicHeight()) / 2;
+                        int iconBottom = iconTop + icon.getIntrinsicHeight();
+                        int iconLeft = itemView.getLeft() + 32;
+                        int iconRight = iconLeft + icon.getIntrinsicWidth();
+
+                        icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
+                        icon.draw(c);
+                    }
+                } else if (dX < 0) {
+                    paint.setColor(Color.parseColor("#F44336"));
+
+                    RectF backgroundRect = new RectF(itemView.getRight() + dX, itemView.getTop(), itemView.getRight(), itemView.getBottom());
+                    c.drawRoundRect(backgroundRect, cornerRadius, cornerRadius, paint);
+
+                    icon = ContextCompat.getDrawable(MainActivity.this, R.drawable.baseline_delete_24);
+                    if (icon != null) {
+                        icon.setTint(Color.WHITE);
+                        int iconTop = itemView.getTop() + (itemHeight - icon.getIntrinsicHeight()) / 2;
+                        int iconBottom = iconTop + icon.getIntrinsicHeight();
+                        int iconRight = itemView.getRight() - 32;
+                        int iconLeft = iconRight - icon.getIntrinsicWidth();
+
+                        icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
+                        icon.draw(c);
+                    }
+                }
+            }
+        };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(rVActiviy);
     }
 
     private void refreshDataAct() {
