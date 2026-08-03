@@ -408,6 +408,31 @@ public class DatabaseDataSource {
         return database.update(SubActivityEntry.TABLE_NAME, values, whereClause, whereArgs);
     }
 
+    public boolean updateActivityTitle(long id, String title) {
+        database.beginTransaction();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(ActivityEntry.COLUMN_TITLE, title);
+
+            String whereClause = ActivityEntry._ID + " = ?";
+            String[] whereArgs = {String.valueOf(id)};
+
+            int rowsAffected =  database.update(ActivityEntry.TABLE_NAME, values, whereClause, whereArgs);
+
+            if (rowsAffected > 0) {
+                database.setTransactionSuccessful();
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            Log.e(TAG, "updateActivityTitle: " + e.getMessage());
+            return false;
+        } finally {
+            database.endTransaction();
+        }
+    }
+
     //DELETE
     public boolean deleteActivity(long activityId) {
         database.beginTransaction();
@@ -462,5 +487,35 @@ public class DatabaseDataSource {
         String[] whereArgs = {String.valueOf(subActivityId)};
         int rowsAffected = database.delete(ActivityLogEntry.TABLE_NAME, whereClause, whereArgs);
         return rowsAffected > 0;
+    }
+
+    public boolean deleteSubActivity(long subActivityId) {
+        database.beginTransaction();
+
+        try {
+            database.delete(
+                    ActivityLogEntry.TABLE_NAME,
+                    ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ?",
+                    new String[]{String.valueOf(subActivityId)}
+            );
+
+
+            int rowsAffected = database.delete(
+                    SubActivityEntry.TABLE_NAME,
+                    SubActivityEntry._ID + " = ?",
+                    new String[]{String.valueOf(subActivityId)}
+            );
+
+            if (rowsAffected> 0) {
+                database.setTransactionSuccessful();
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            Log.e(TAG, "deleteSubActivity: " + e.getMessage());
+            return false;
+        } finally {
+            database.endTransaction();
+        }
     }
 }

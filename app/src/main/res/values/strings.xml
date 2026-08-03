@@ -4,12 +4,14 @@
     <string name="example_activity_progress">1500 ml / 2000 ml</string>
     <string name="add_new_activity">Tambah Aktivitas Baru</string>
     <string name="add_new_sub_activity">Tambah Sub Aktivitas Baru</string>
-    <string name="edit_activity">Edit ktivitas</string>
+    <string name="edit_activity">Edit Aktivitas</string>
     <string name="edit_sub_activity">Edit Sub Aktivitas</string>
     <string name="title">Judul</string>
     <string name="type">Tipe</string>
     <string name="create">Buat</string>
+    <string name="delete">Hapus</string>
     <string name="cancel">Batal</string>
+    <string name="update">Ubah</string>
     <string name="total">Total</string>
     <string name="create_data_succesfully">Data berhasil disimpan</string>
     <string name="target">Target</string>
@@ -24,7 +26,6 @@
     <string name="completion_activity">Konfirmasi Penyelesaian</string>
     <string name="unit">Satuan</string>
     <string name="sub_activity">Sub Activity</string>
-    <string name="update">Ubah</string>
     <string name="finish">Selesai</string>
     <string name="save_time">Simpan waktu</string>
     <string name="data_activity_does_not_exist">Tidak ada data aktivitas</string>

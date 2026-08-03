@@ -173,17 +173,61 @@ public class MainActivity extends AppCompatActivity {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     View dialogView = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_edit_activity, null);;
                     builder.setView(dialogView);
+                    builder.setCancelable(false);
+
+                    TextInputEditText etActivityTitle = dialogView.findViewById(R.id.etActivityTitle);
+                    MaterialButton btnCancelEditActivity = dialogView.findViewById(R.id.btnCancelEditActivity);
+                    MaterialButton btnUpdateActivity = dialogView.findViewById(R.id.btnUpdateActivity);
+
+                    //Tampilkan judul activity saat ini
+                    etActivityTitle.setText(activity.getTitle());
 
                     AlertDialog dialog = builder.create();
-                    if (dialog.getWindow() != null) {
-                        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-                    }
                     dialog.show();
 
-                    dialog.setOnCancelListener(dialogInterface -> {
+                    btnCancelEditActivity.setOnClickListener(view -> {
                         viewHolder.itemView.setTag(false);
                         activityAdapter.notifyItemChanged(position);
                         dialog.dismiss();
+                    });
+
+                    btnUpdateActivity.setOnClickListener(view -> {
+                        AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
+                        builder1.setTitle("Yakin untuk ubah judul Aktivitas?");
+                        builder1.setMessage("Judul aktivitas yang sudah diubah masih diubah lagi");
+                        builder1.setCancelable(false);
+
+                        builder1.setPositiveButton("Ubah", (dialogInterface, i) -> {
+                           db.open();
+
+                           try {
+                               boolean updateTitle = db.updateActivityTitle(activity.getId(), etActivityTitle.getText().toString().trim());
+
+                               if (updateTitle) {
+                                   activity.setTitle(etActivityTitle.getText().toString().trim());
+
+                                   Toast.makeText(MainActivity.this, "Judul aktivitas berhasil diubah", Toast.LENGTH_SHORT).show();
+                                   viewHolder.itemView.setTag(false);
+
+                                   activityAdapter.notifyItemChanged(position);
+                                   dialog.dismiss();
+                               } else {
+                                   Toast.makeText(MainActivity.this, "Judul aktivitas gagal diubah", Toast.LENGTH_SHORT).show();
+                               }
+                           } catch (Exception e) {
+                               Log.e(TAG, "onSwiped: Ubah judul aktivitas: " + e.getMessage());
+                           } finally {
+                               db.close();
+                           }
+                        });
+
+
+                        builder1.setNegativeButton("Batal", (dialogInterface, i) -> {
+                            dialogInterface.dismiss();
+                        });
+
+                        AlertDialog dialog1 = builder1.create();
+                        dialog1.show();
                     });
                 }
             }

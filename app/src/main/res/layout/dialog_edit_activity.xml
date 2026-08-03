@@ -38,7 +38,7 @@
             app:hintTextColor="@color/accent_blue">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etSubActivityTitle"
+                android:id="@+id/etActivityTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName"
@@ -118,7 +118,7 @@
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCreateSubActivity"
+                android:id="@+id/btnCancelEditActivity"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -133,7 +133,7 @@
                 tools:ignore="MissingConstraints"/>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCreateSubActivity"
+                android:id="@+id/btnUpdateActivity"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

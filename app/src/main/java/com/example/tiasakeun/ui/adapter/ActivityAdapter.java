@@ -34,7 +34,6 @@ import com.example.tiasakeun.data.source.DatabaseDataSource;
 import com.example.tiasakeun.ui.picker.DatePickerFragment;
 import com.example.tiasakeun.ui.picker.TimePickerFragment;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -100,8 +99,6 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
                 TextInputEditText etSubActivityTitle = dialogView.findViewById(R.id.etSubActivityTitle);
                 TextInputEditText etTotal = dialogView.findViewById(R.id.etTotal);
-                MaterialButton btnTotalMinus = dialogView.findViewById(R.id.btnTotalMinus);
-                MaterialButton btnTotalPlus = dialogView.findViewById(R.id.btnTotalPlus);
                 TextInputLayout spinnerScheduleLayout = dialogView.findViewById(R.id.spinnerScheduleLayout);
                 MaterialAutoCompleteTextView spinnerSchedule = dialogView.findViewById(R.id.spinnerSchedule);
                 MaterialButton btnCreateSubActivity = dialogView.findViewById(R.id.btnCreateSubActivity);
@@ -170,32 +167,6 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                         selectedSchedule[0] = (Schedule) adapterView.getItemAtPosition(i);
-                    }
-                });
-
-                //Tombol untuk mengurangi nilai target
-                btnTotalMinus.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String text = etTotal.getText().toString().trim();
-                        int currValue = text.isEmpty() ? 0 : Integer.valueOf(etTotal.getText().toString());
-
-                        if (currValue > 0) {
-                            currValue--;
-                            etTotal.setText(String.valueOf(currValue));
-                        }
-                    }
-                });
-
-                //Tombol untuk menambah nilai target
-                btnTotalPlus.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String text = etTotal.getText().toString().trim();
-                        int currValue = text.isEmpty() ? 0 : Integer.valueOf(etTotal.getText().toString());
-
-                        currValue++;
-                        etTotal.setText(String.valueOf(currValue));
                     }
                 });
 

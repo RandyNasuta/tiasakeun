@@ -94,15 +94,16 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
 
                 View dialogView = LayoutInflater.from(view.getContext()).inflate(R.layout.dialog_add_sub_activity, null);
                 builder.setView(dialogView);
+                builder.setCancelable(false);
 
                 TextView tvTitleDialogSubActivity = dialogView.findViewById(R.id.tvTitleDialogSubActivity);
                 TextInputEditText etSubActivityTitle = dialogView.findViewById(R.id.etSubActivityTitle);
                 TextInputEditText etTotal = dialogView.findViewById(R.id.etTotal);
-                MaterialButton btnTotalMinus = dialogView.findViewById(R.id.btnTotalMinus);
-                MaterialButton btnTotalPlus = dialogView.findViewById(R.id.btnTotalPlus);
                 TextInputLayout spinnerScheduleLayout = dialogView.findViewById(R.id.spinnerScheduleLayout);
                 MaterialAutoCompleteTextView spinnerSchedule = dialogView.findViewById(R.id.spinnerSchedule);
                 MaterialButton btnCreateSubActivity = dialogView.findViewById(R.id.btnCreateSubActivity);
+                MaterialButton btnDeleteSubActivity = dialogView.findViewById(R.id.btnDeleteSubActivity);
+                MaterialButton btnCloseDialogSubActivity = dialogView.findViewById(R.id.btnCloseDialogSubActivity);
                 MaterialCheckBox cbSchedule = dialogView.findViewById(R.id.cbSchedule);
                 MaterialButton btnDateSubActivity = dialogView.findViewById(R.id.btnDateSubActivity);
                 MaterialButton btnTimeSubActivity = dialogView.findViewById(R.id.btnTimeSubActivity);
@@ -110,6 +111,7 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                 LinearLayout llTargetValueTime = dialogView.findViewById(R.id.llTargetValueTime);
                 TimePicker tpSpinner = dialogView.findViewById(R.id.tpSpinner);
                 tpSpinner.setIs24HourView(true);
+                btnDeleteSubActivity.setVisibility(VISIBLE);
 
                 tvTitleDialogSubActivity.setText(R.string.edit_sub_activity);
                 long tempHour = subActivity.getTargetValue() / 3600;
@@ -178,6 +180,11 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
 
                 dialog.setOnCancelListener(dialogInterface -> {
                     tvTitleDialogSubActivity.setText(R.string.add_new_activity);
+                    btnDeleteSubActivity.setVisibility(GONE);
+                });
+
+                btnCloseDialogSubActivity.setOnClickListener(view1 -> {
+                    dialog.dismiss();
                 });
 
                 //Kondisi ketika checbox di checked atau unchecked
@@ -210,32 +217,6 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                         selectedSchedule[0] = (Schedule) adapterView.getItemAtPosition(i);
-                    }
-                });
-
-                //Tombol untuk mengurangi nilai target
-                btnTotalMinus.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String text = etTotal.getText().toString().trim();
-                        int currValue = text.isEmpty() ? 0 : Integer.valueOf(etTotal.getText().toString());
-
-                        if (currValue > 0) {
-                            currValue--;
-                            etTotal.setText(String.valueOf(currValue));
-                        }
-                    }
-                });
-
-                //Tombol untuk menambah nilai target
-                btnTotalPlus.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String text = etTotal.getText().toString().trim();
-                        int currValue = text.isEmpty() ? 0 : Integer.valueOf(etTotal.getText().toString());
-
-                        currValue++;
-                        etTotal.setText(String.valueOf(currValue));
                     }
                 });
 
@@ -354,6 +335,48 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                             db.close();
                         }
                     }
+                });
+
+                btnDeleteSubActivity.setOnClickListener(view1 -> {
+                    AlertDialog.Builder builderDelete = new AlertDialog.Builder(view.getContext());
+                    builderDelete.setTitle("Yakin untuk hapus sub aktivitas?");
+                    builderDelete.setMessage("Aksi ini akan menghapus semua data sub aktivitas dan tidak bisa dikembalikan");
+                    builderDelete.setCancelable(false);
+
+                    builderDelete.setPositiveButton("Hapus", (dialogInterface, i) -> {
+                        db.open();
+
+                        try {
+                            boolean deleted = db.deleteSubActivity(subActivity.getId());
+                            if (deleted) {
+                                int currentPosition = holder.getAdapterPosition();
+
+                                if (currentPosition != RecyclerView.NO_POSITION) {
+                                    subActivities.remove(currentPosition);
+                                    notifyItemRemoved(currentPosition);
+                                    notifyItemRangeChanged(currentPosition, subActivities.size());
+                                }
+
+                                Toast.makeText(view.getContext(), "Sub aktivitas berhasil dihapus", Toast.LENGTH_SHORT).show();
+                                dialogInterface.dismiss();
+                                dialog.dismiss();
+                            } else {
+                                Toast.makeText(view.getContext(), "Sub aktivitas gagal dihapus", Toast.LENGTH_SHORT).show();
+                                dialogInterface.dismiss();
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "onLongClick: Hapus sub aktivitas: " + e.getMessage());
+                        } finally {
+                            db.close();
+                        }
+                    });
+
+                    builderDelete.setNegativeButton("Batal", (dialogInterface, i) -> {
+                        dialogInterface.dismiss();
+                    });
+
+                    AlertDialog deleteDialog = builderDelete.create();
+                    deleteDialog.show();
                 });
                 return true;
             }
