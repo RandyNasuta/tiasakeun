@@ -33,6 +33,7 @@ import com.example.tiasakeun.data.model.SubActivity;
 import com.example.tiasakeun.data.source.DatabaseDataSource;
 import com.example.tiasakeun.ui.picker.DatePickerFragment;
 import com.example.tiasakeun.ui.picker.TimePickerFragment;
+import com.example.tiasakeun.utils.helper.AlarmHelper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
@@ -246,14 +247,23 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
                         String formattedDateTimeActivity;
 
+                        String dateStr = null;
+                        String timeStr = null;
                         if (isScheduleChecked) {
                             formattedDateTimeActivity = String.format(Locale.getDefault(), "%04d-%02d-%02d %02d:%02d:00",
                                     sYear[0], sMonth[0] + 1, sDay[0], sHour[0], sMinute[0]);
+
+                            dateStr = String.format(Locale.getDefault(), "%04d-%02d-%02d",
+                                    sYear[0], sMonth[0] + 1, sDay[0]);
+
+                            timeStr = String.format(Locale.getDefault(), "%02d:%02d",
+                                    sHour[0], sMinute[0]);
                         } else {
                             //Jika penjadwalan tidak di checked, maka kegiatan akan dilakukan pada hari tersebut
                             Calendar current = Calendar.getInstance();
                             formattedDateTimeActivity = String.format(Locale.getDefault(), "%04d-%02d-%02d",
                                     current.get(Calendar.YEAR), current.get(Calendar.MONTH) + 1, current.get(Calendar.DAY_OF_MONTH));
+
                         }
 
                         db.open();
@@ -272,6 +282,17 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
                             if (result != -1) {
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
+
+                                if (isScheduleChecked) {
+                                    AlarmHelper.setAlarmForSubActivity(
+                                            context,
+                                            result,
+                                            title,
+                                            dateStr,
+                                            timeStr
+                                    );
+                                }
+
                                 notifyItemChanged(holder.getAdapterPosition());
 
                                 dialog.dismiss();

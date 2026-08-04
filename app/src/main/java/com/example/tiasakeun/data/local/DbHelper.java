@@ -7,7 +7,7 @@ import com.example.tiasakeun.data.local.UserContract.UserEntry;
 import com.example.tiasakeun.data.local.TypeContract.TypeEntry;
 import com.example.tiasakeun.data.local.SubActivityContract.SubActivityEntry;
 import com.example.tiasakeun.data.local.ScheduleContract.ScheduleEntry;
-import com.example.tiasakeun.data.local.ActivityLogContract.ActivityLogEntry;
+import com.example.tiasakeun.data.local.SubActivityLogContract.SubActivityLogEntry;
 import com.example.tiasakeun.data.local.ActivityContract.ActivityEntry;
 import com.example.tiasakeun.data.local.NotificationContract.NotificationEntry;
 
@@ -68,12 +68,12 @@ public class DbHelper extends SQLiteOpenHelper {
                     "ON DELETE CASCADE)";
 
     private static final String SQL_CREATE_ACTIVITY_LOGS =
-            "CREATE TABLE " + ActivityLogEntry.TABLE_NAME + " (" +
-                    ActivityLogEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " INTEGER, " +
-                    ActivityLogEntry.COLUMN_VALUE + " INTEGER NOT NULL, " +
-                    ActivityLogEntry.COLUMN_LOG_DATE + " TEXT DEFAULT (datetime('now', 'localtime')), " +
-                    "FOREIGN KEY (" + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + ") REFERENCES " +
+            "CREATE TABLE " + SubActivityLogEntry.TABLE_NAME + " (" +
+                    SubActivityLogEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " INTEGER, " +
+                    SubActivityLogEntry.COLUMN_VALUE + " INTEGER NOT NULL, " +
+                    SubActivityLogEntry.COLUMN_LOG_DATE + " TEXT DEFAULT (datetime('now', 'localtime')), " +
+                    "FOREIGN KEY (" + SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + ") REFERENCES " +
                     SubActivityEntry.TABLE_NAME + "(" + SubActivityEntry._ID + ") " +
                     "ON DELETE CASCADE)";
 
@@ -101,7 +101,7 @@ public class DbHelper extends SQLiteOpenHelper {
             "DROP TABLE IF EXISTS " + SubActivityEntry.TABLE_NAME;
 
     private static final String SQL_DELETE_ACTIVITY_LOGS =
-            "DROP TABLE IF EXISTS " + ActivityLogEntry.TABLE_NAME;
+            "DROP TABLE IF EXISTS " + SubActivityLogEntry.TABLE_NAME;
 
     private static final String SQL_DELETE_NOTIFICATIONS =
             "DROP TABLE IF EXISTS " + NotificationEntry.TABLE_NAME;

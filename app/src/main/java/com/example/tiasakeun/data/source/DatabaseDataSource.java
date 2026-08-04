@@ -9,7 +9,7 @@ import android.util.Log;
 
 import com.example.tiasakeun.data.local.ActivityContract.ActivityEntry;
 import com.example.tiasakeun.data.local.SubActivityContract.SubActivityEntry;
-import com.example.tiasakeun.data.local.ActivityLogContract.ActivityLogEntry;
+import com.example.tiasakeun.data.local.SubActivityLogContract.SubActivityLogEntry;
 import com.example.tiasakeun.data.local.DbHelper;
 import com.example.tiasakeun.data.local.ScheduleContract.ScheduleEntry;
 import com.example.tiasakeun.data.local.TypeContract.TypeEntry;
@@ -21,6 +21,7 @@ import com.example.tiasakeun.data.model.Type;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class DatabaseDataSource {
     private final String TAG = "DatabaseDataSource";
@@ -65,10 +66,10 @@ public class DatabaseDataSource {
 
     public long createLogActivity(long subActivityId, long value, String date) {
         ContentValues values = new ContentValues();
-        values.put(ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID, subActivityId);
-        values.put(ActivityLogEntry.COLUMN_VALUE, value);
-        values.put(ActivityLogEntry.COLUMN_LOG_DATE, date);
-        return database.insert(ActivityLogEntry.TABLE_NAME, null, values);
+        values.put(SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID, subActivityId);
+        values.put(SubActivityLogEntry.COLUMN_VALUE, value);
+        values.put(SubActivityLogEntry.COLUMN_LOG_DATE, date);
+        return database.insert(SubActivityLogEntry.TABLE_NAME, null, values);
     }
 
     //READ
@@ -131,17 +132,17 @@ public class DatabaseDataSource {
          * Type
          * Unit Name
          */
-        String todayFilter = "date(" + ActivityLogEntry.TABLE_NAME  + "." + ActivityLogEntry.COLUMN_LOG_DATE + ") > date('now', 'localtime')";
+        String todayFilter = "date(" + SubActivityLogEntry.TABLE_NAME  + "." + SubActivityLogEntry.COLUMN_LOG_DATE + ") > date('now', 'localtime')";
         String currentValueQuery;
 
         if (categoryType.equals("Waktu")) {
-            currentValueQuery = "IFNULL(" + "SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ")" + ", 0)";
+            currentValueQuery = "IFNULL(" + "SUM(" + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_VALUE + ")" + ", 0)";
         } else {
-            currentValueQuery = "IFNULL((SELECT " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + " " +
-                                "FROM " + ActivityLogEntry.TABLE_NAME + " " +
-                                "WHERE " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " " +
-                                " AND " + ActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', 'localtime') " +
-                                "ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " DESC LIMIT 1), 0)";
+            currentValueQuery = "IFNULL((SELECT " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_VALUE + " " +
+                                "FROM " + SubActivityLogEntry.TABLE_NAME + " " +
+                                "WHERE " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " " +
+                                " AND " + SubActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', 'localtime') " +
+                                "ORDER BY " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_LOG_DATE + " DESC LIMIT 1), 0)";
         }
 
         String query = "Select " +
@@ -158,7 +159,7 @@ public class DatabaseDataSource {
                 "INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID + " " +
                 "INNER JOIN " + TypeEntry.TABLE_NAME + " ON " + ActivityEntry.COLUMN_TYPE_ID + " = " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID + " " +
                 "INNER JOIN " + ScheduleEntry.TABLE_NAME + " ON " + SubActivityEntry.COLUMN_SCHEDULE_ID + " = " + ScheduleEntry.TABLE_NAME + "." + ScheduleEntry._ID + " " +
-                "LEFT JOIN " + ActivityLogEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " AND " + todayFilter + " " +
+                "LEFT JOIN " + SubActivityLogEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " AND " + todayFilter + " " +
                 "WHERE " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + activityId +
                 (isCompleted != null ? " AND " + SubActivityEntry.COLUMN_IS_COMPLETED + " = " + isCompleted : "") + " " +
                 "GROUP BY " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID;
@@ -204,6 +205,31 @@ public class DatabaseDataSource {
         cursor.close();
 
         return subActivity;
+    }
+
+    public ArrayList<SubActivity> getSubActivitiesByActivityId(long activityId) {
+        ArrayList<SubActivity> subActivities = new ArrayList<>();
+        String query = "Select * FROM " + SubActivityEntry.TABLE_NAME + " WHERE " + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + activityId;
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                subActivities.add(new SubActivity(
+                        (cursor.getLong(0)),
+                        (cursor.getLong(1)),
+                        (cursor.getLong(2)),
+                        (cursor.getString(3)),
+                        (cursor.getLong(4)),
+                        (cursor.getString(5)),
+                        (cursor.getInt(6)),
+                        (cursor.getInt(7))
+                ));
+
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        return subActivities;
     }
 
     public String getCategoryTypeById(long activityId) {
@@ -258,18 +284,18 @@ public class DatabaseDataSource {
         int progress = 0;
         String query;
 
-        String todayFilter = "date(" + ActivityLogEntry.TABLE_NAME  + "." + ActivityLogEntry.COLUMN_LOG_DATE + ") = date('now', 'localtime')";
+        String todayFilter = "date(" + SubActivityLogEntry.TABLE_NAME  + "." + SubActivityLogEntry.COLUMN_LOG_DATE + ") = date('now', 'localtime')";
         if (categoryType.equals("Waktu")) {
-            query = "Select SUM(" + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ") FROM " + ActivityLogEntry.TABLE_NAME + " " +
-                    "INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
+            query = "Select SUM(" + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_VALUE + ") FROM " + SubActivityLogEntry.TABLE_NAME + " " +
+                    "INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
                     SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id + " AND " +
                     todayFilter;
         } else {
-            query = "Select " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + " FROM " + ActivityLogEntry.TABLE_NAME +
-                    " INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
+            query = "Select " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_VALUE + " FROM " + SubActivityLogEntry.TABLE_NAME +
+                    " INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " +
                     SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " WHERE " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " = " + id + " AND " +
                     todayFilter + " " +
-                    "ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " DESC " +
+                    "ORDER BY " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_LOG_DATE + " DESC " +
                     "LIMIT 1";
         }
 
@@ -318,20 +344,20 @@ public class DatabaseDataSource {
         ArrayList<SubActivityLog> subActivityLogs = new ArrayList<>();
 
         String query = "SELECT " +
-                ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry._ID + ", " +
-                ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_VALUE + ", " +
-                ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + ", " +
+                SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry._ID + ", " +
+                SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_VALUE + ", " +
+                SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_LOG_DATE + ", " +
                 SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + ", " +
                 SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_TITLE + ", " +
                 TypeEntry.TABLE_NAME + "." + TypeEntry.COLUMN_CATEGORY + ", " +
                 TypeEntry.TABLE_NAME + "." + TypeEntry.COLUMN_UNIT_NAME +
-                " FROM " + ActivityLogEntry.TABLE_NAME + " " +
-                "INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " " +
+                " FROM " + SubActivityLogEntry.TABLE_NAME + " " +
+                "INNER JOIN " + SubActivityEntry.TABLE_NAME + " ON " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry._ID + " " +
                 "INNER JOIN " + ActivityEntry.TABLE_NAME + " ON " + SubActivityEntry.TABLE_NAME + "." + SubActivityEntry.COLUMN_ACTIVITY_ID + " = " + ActivityEntry.TABLE_NAME + "." + ActivityEntry._ID + " " +
                 "INNER JOIN " + TypeEntry.TABLE_NAME + " ON " + ActivityEntry.TABLE_NAME + "." + ActivityEntry.COLUMN_TYPE_ID + " = " + TypeEntry.TABLE_NAME + "." + TypeEntry._ID + " " +
-                "WHERE " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + subActivityId + " " +
-                (!duration.equals("") ? "AND " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', 'localtime', '" + duration + "') " : "") +
-                "ORDER BY " + ActivityLogEntry.TABLE_NAME + "." + sorting;
+                "WHERE " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + subActivityId + " " +
+                (!duration.equals("") ? "AND " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', 'localtime', '" + duration + "') " : "") +
+                "ORDER BY " + SubActivityLogEntry.TABLE_NAME + "." + sorting;
 
         Cursor cursor = database.rawQuery(query, null);
 
@@ -362,13 +388,13 @@ public class DatabaseDataSource {
 
         String dateFilter = "";
         if (!duration.isEmpty()) {
-            dateFilter = " AND " + ActivityLogEntry.TABLE_NAME + "." + ActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', 'localtime', '" + duration + "')";
+            dateFilter = " AND " + SubActivityLogEntry.TABLE_NAME + "." + SubActivityLogEntry.COLUMN_LOG_DATE + " >= date('now', 'localtime', '" + duration + "')";
         }
 
-        String query = "SELECT date(" + ActivityLogEntry.COLUMN_LOG_DATE + ") as log_day, " +
-                "SUM(" + ActivityLogEntry.COLUMN_VALUE + ") as total_value " +
-                "FROM " + ActivityLogEntry.TABLE_NAME + " " +
-                "WHERE " + ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + subActivityId + " " +
+        String query = "SELECT date(" + SubActivityLogEntry.COLUMN_LOG_DATE + ") as log_day, " +
+                "SUM(" + SubActivityLogEntry.COLUMN_VALUE + ") as total_value " +
+                "FROM " + SubActivityLogEntry.TABLE_NAME + " " +
+                "WHERE " + SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = " + subActivityId + " " +
                 dateFilter +
                 " GROUP BY log_day " +
                 " ORDER BY log_day ASC";
@@ -384,6 +410,35 @@ public class DatabaseDataSource {
         }
         cursor.close();
         return summary;
+    }
+
+    public ArrayList<SubActivity> getIncompleteSubActivitiesByDate(String date) {
+        ArrayList<SubActivity> incompleteSubActivities = new ArrayList<>();
+
+        Cursor cursor = database.query(
+                SubActivityEntry.TABLE_NAME,
+                null,
+                SubActivityEntry.COLUMN_DATE_ACTIVITY + " LIKE ? AND " + SubActivityEntry.COLUMN_IS_COMPLETED + " = ?",
+                new String[]{date + "%", "0"},
+                null, null, null
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                SubActivity subActivity = new SubActivity();
+                subActivity.setId(cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry._ID)));
+                subActivity.setActivityId(cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_ACTIVITY_ID)));
+                subActivity.setScheduleId(cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_SCHEDULE_ID)));
+                subActivity.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_TITLE)));
+                subActivity.setTargetValue(cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_TARGET_VALUE)));
+                subActivity.setDateActivity(cursor.getString(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_DATE_ACTIVITY)));
+                subActivity.setNotification(cursor.getInt(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_NOTIFICATION)));
+                subActivity.setIsCompleted(cursor.getInt(cursor.getColumnIndexOrThrow(SubActivityEntry.COLUMN_IS_COMPLETED)));
+                incompleteSubActivities.add(subActivity);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        return incompleteSubActivities;
     }
 
     //UPDATE
@@ -448,8 +503,8 @@ public class DatabaseDataSource {
                     long subActivityId = cursor.getLong(cursor.getColumnIndexOrThrow(SubActivityEntry._ID));
 
                     database.delete(
-                            ActivityLogEntry.TABLE_NAME,
-                            ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ?",
+                            SubActivityLogEntry.TABLE_NAME,
+                            SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ?",
                             new String[]{String.valueOf(subActivityId)}
                     );
                 }
@@ -483,9 +538,9 @@ public class DatabaseDataSource {
     }
 
     public boolean deleteActivityLogs(long subActivityId) {
-        String whereClause = ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ? AND date(" + ActivityLogEntry.COLUMN_LOG_DATE + ") = date('now', 'localtime')";
+        String whereClause = SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ? AND date(" + SubActivityLogEntry.COLUMN_LOG_DATE + ") = date('now', 'localtime')";
         String[] whereArgs = {String.valueOf(subActivityId)};
-        int rowsAffected = database.delete(ActivityLogEntry.TABLE_NAME, whereClause, whereArgs);
+        int rowsAffected = database.delete(SubActivityLogEntry.TABLE_NAME, whereClause, whereArgs);
         return rowsAffected > 0;
     }
 
@@ -494,8 +549,8 @@ public class DatabaseDataSource {
 
         try {
             database.delete(
-                    ActivityLogEntry.TABLE_NAME,
-                    ActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ?",
+                    SubActivityLogEntry.TABLE_NAME,
+                    SubActivityLogEntry.COLUMN_SUB_ACTIVITY_ID + " = ?",
                     new String[]{String.valueOf(subActivityId)}
             );
 

@@ -25,6 +25,10 @@
             android:name=".ui.view.DetailActActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        
+        <receiver
+            android:name=".utils.receiver.AlarmReceiver"
+            android:exported="false"/>
     </application>
 
 </manifest>

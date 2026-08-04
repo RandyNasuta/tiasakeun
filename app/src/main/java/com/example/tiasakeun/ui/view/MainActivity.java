@@ -13,7 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -26,14 +26,22 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.tiasakeun.R;
 import com.example.tiasakeun.data.model.Activity;
 import com.example.tiasakeun.data.model.Schedule;
+import com.example.tiasakeun.data.model.SubActivity;
 import com.example.tiasakeun.data.model.Type;
 import com.example.tiasakeun.data.source.DatabaseDataSource;
 import com.example.tiasakeun.ui.adapter.ActivityAdapter;
 import com.example.tiasakeun.ui.adapter.IconAdapter;
+import com.example.tiasakeun.utils.helper.AlarmHelper;
+import com.example.tiasakeun.utils.worker.IncompleteActivityWorker;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
@@ -41,6 +49,7 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityAdapter activityAdapter;
     private ArrayList<Activity> activityList = new ArrayList<>();
     private DatabaseDataSource db = null;
-    private TextView tvNoDataActiviy;
+    private LinearLayout llNoData;
 
     private void initView() {
         fabAddActivity = findViewById(R.id.fabAddActivity);
@@ -59,17 +68,17 @@ public class MainActivity extends AppCompatActivity {
         //RecyclerView
         rVActiviy = findViewById(R.id.rVActiviy);
         rVActiviy.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-        tvNoDataActiviy = findViewById(R.id.tvNoDataActiviy);
+        llNoData = findViewById(R.id.llNoData);
 
         db.open();
         activityList.addAll(db.getAllActivities());
         db.close();
 
         if (activityList.isEmpty()) {
-            tvNoDataActiviy.setVisibility(View.VISIBLE);
+            llNoData.setVisibility(View.VISIBLE);
             rVActiviy.setVisibility(View.GONE);
         } else {
-            tvNoDataActiviy.setVisibility(View.GONE);
+            llNoData.setVisibility(View.GONE);
             rVActiviy.setVisibility(View.VISIBLE);
         }
 
@@ -87,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        scheduleIncompleteTask();
 
         //Inisialisasi database
         db = new DatabaseDataSource(this);
@@ -128,15 +139,32 @@ public class MainActivity extends AppCompatActivity {
                         db.open();
 
                         try {
+                            List<SubActivity> subActivities = db.getSubActivitiesByActivityId(activity.getId());
                             boolean deleteData = db.deleteActivity(activity.getId());
 
                             if (deleteData) {
                                 Toast.makeText(MainActivity.this, "Aktivitas berhasil dihapus", Toast.LENGTH_SHORT).show();
 
+                                if (subActivities != null && !subActivities.isEmpty()) {
+                                    for (SubActivity subActivity: subActivities) {
+                                        if (subActivity.getScheduleId() != 0) {
+                                            AlarmHelper.cancelAlarmForSubActivity(MainActivity.this, subActivity.getId());
+                                        }
+                                    }
+                                }
+
                                 int currPos = activityList.indexOf(activity);
                                 if (currPos != -1) {
                                     activityList.remove(currPos);
                                     activityAdapter.notifyItemRemoved(currPos);
+
+                                    if (activityList.isEmpty()) {
+                                        llNoData.setVisibility(View.VISIBLE);
+                                        rVActiviy.setVisibility(View.GONE);
+                                    } else {
+                                        llNoData.setVisibility(View.GONE);
+                                        rVActiviy.setVisibility(View.VISIBLE);
+                                    }
                                 }
                             } else {
                                 Toast.makeText(MainActivity.this, "Aktivitas gagal dihapus", Toast.LENGTH_SHORT).show();
@@ -297,10 +325,10 @@ public class MainActivity extends AppCompatActivity {
             db.close();
 
             if (newData.isEmpty()) {
-                tvNoDataActiviy.setVisibility(View.VISIBLE);
+                llNoData.setVisibility(View.VISIBLE);
                 rVActiviy.setVisibility(View.GONE);
             } else {
-                tvNoDataActiviy.setVisibility(View.GONE);
+                llNoData.setVisibility(View.GONE);
                 rVActiviy.setVisibility(View.VISIBLE);
             }
 
@@ -436,6 +464,22 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void scheduleIncompleteTask() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiresBatteryNotLow(true)
+                .build();
+
+        PeriodicWorkRequest reminderRequest = new PeriodicWorkRequest.Builder(IncompleteActivityWorker.class, 6, TimeUnit.HOURS)
+                .setConstraints(constraints)
+                .build();
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "incompleteTaskCheckerWork",
+                ExistingPeriodicWorkPolicy.KEEP,
+                reminderRequest
+        );
     }
 
     @Override

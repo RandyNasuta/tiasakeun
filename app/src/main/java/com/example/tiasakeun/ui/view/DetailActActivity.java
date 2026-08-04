@@ -58,7 +58,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.example.tiasakeun.data.local.ActivityLogContract.ActivityLogEntry;
+import com.example.tiasakeun.data.local.SubActivityLogContract.SubActivityLogEntry;
 
 public class DetailActActivity extends AppCompatActivity {
     private final String TAG = "DetailActActivity";
@@ -431,15 +431,15 @@ public class DetailActActivity extends AppCompatActivity {
         spSortSubActivity.setOnItemClickListener((adapterView, view, i, l) -> {
             if (sortingList[i].equals("Terbaru") || sortingList[i].equals("Tertinggi")) {
                 if (sortingList[i].equals("Terbaru")) {
-                    sortingChoosen = ActivityLogEntry.COLUMN_LOG_DATE + " DESC";
+                    sortingChoosen = SubActivityLogEntry.COLUMN_LOG_DATE + " DESC";
                 } else {
-                    sortingChoosen = ActivityLogEntry.COLUMN_VALUE + " DESC";
+                    sortingChoosen = SubActivityLogEntry.COLUMN_VALUE + " DESC";
                 }
             } else {
                 if (sortingList[i].equals("Terlama")) {
-                    sortingChoosen = ActivityLogEntry.COLUMN_LOG_DATE + " ASC";
+                    sortingChoosen = SubActivityLogEntry.COLUMN_LOG_DATE + " ASC";
                 } else {
-                    sortingChoosen = ActivityLogEntry.COLUMN_VALUE + " ASC";
+                    sortingChoosen = SubActivityLogEntry.COLUMN_VALUE + " ASC";
                 }
             }
 
@@ -498,7 +498,7 @@ public class DetailActActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void initSecondSection(boolean isFirstInit) {
         durationChoosen = "-1 day";
-        sortingChoosen = ActivityLogEntry.COLUMN_LOG_DATE + " DESC";
+        sortingChoosen = SubActivityLogEntry.COLUMN_LOG_DATE + " DESC";
         spSortSubActivity.setText("Terbaru", false);
 
         db.open();

@@ -14,7 +14,17 @@ public class SubActivity {
     private String unitName;
     private String scheduleType;
 
-    public SubActivity() {
+    public SubActivity() {}
+
+    public SubActivity(long id, long activityId, long scheduleId, String title, long targetValue, String dateActivity, int notification, int isCompleted) {
+        this.id = id;
+        this.activityId = activityId;
+        this.scheduleId = scheduleId;
+        this.title = title;
+        this.targetValue = targetValue;
+        this.dateActivity = dateActivity;
+        this.notification = notification;
+        this.isCompleted = isCompleted;
     }
 
     public long getId() {
