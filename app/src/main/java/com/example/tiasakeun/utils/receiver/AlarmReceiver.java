@@ -6,17 +6,21 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
 import com.example.tiasakeun.R;
 
 public class AlarmReceiver extends BroadcastReceiver {
+    private final String TAG = "AlarmReceiver";
+
     //ID untuk channel notifikasi
     private static final String CHANNEL_ID = "sub_activity_channel";
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.i(TAG, "onReceive: RUN");
         String subActivityTitle = intent.getStringExtra("subActivityTitle");
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -39,4 +43,6 @@ public class AlarmReceiver extends BroadcastReceiver {
         int notificationId = (int) System.currentTimeMillis();
         notificationManager.notify(notificationId, builder.build());
     }
+
+
 }
