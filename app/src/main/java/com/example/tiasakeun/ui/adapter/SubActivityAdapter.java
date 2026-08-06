@@ -39,6 +39,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -160,8 +161,16 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                         db.open();
                         selectedSchedule[0] = (Schedule) db.getScheduleByType(subActivity.getScheduleType());
                         db.close();
-                        sYear[0] = Integer.parseInt(dateFormat[0].split("/")[2]);
-                        sHour[0] = Integer.parseInt(dateFormat[1].split(":")[0]);
+
+                        Log.i(TAG, "onLongClick: dateFormat: " + Arrays.toString(dateFormat));
+                        String[] dateParse = dateFormat[0].split("/");
+                        sDay[0] = Integer.parseInt(dateParse[0]);
+                        sMonth[0] = Integer.parseInt(dateParse[1]) - 1;
+                        sYear[0] = Integer.parseInt(dateParse[2]);
+
+                        String[] timeParse = dateFormat[1].split(":");
+                        sHour[0] = Integer.parseInt(timeParse[0]);
+                        sMinute[0] = Integer.parseInt(timeParse[1]);
                     }
                 } catch (ParseException e) {
                     Log.e(TAG, "onLongClick: Error pergantian format tanggal: " + e.getMessage());
@@ -331,16 +340,18 @@ public class SubActivityAdapter extends RecyclerView.Adapter<SubActivityAdapter.
                             if (result != -1) {
                                 Toast.makeText(context.getApplicationContext(), R.string.create_data_succesfully, Toast.LENGTH_SHORT).show();
 
+                                Log.i(TAG, "onClick: is Schedule checked" + isScheduleChecked);
+                                AlarmHelper.cancelAlarmForSubActivity(context, subActivity.getId());
+
                                 if (isScheduleChecked) {
+                                    Log.i(TAG, "onClick: update alarm");
                                     AlarmHelper.setAlarmForSubActivity(
                                             context,
-                                            result,
+                                            subActivity.getId(),
                                             title,
                                             dateStr,
                                             timeStr
                                     );
-                                } else {
-                                    AlarmHelper.cancelAlarmForSubActivity(context, subActivity.getId());
                                 }
 
                                 subActivities.clear();

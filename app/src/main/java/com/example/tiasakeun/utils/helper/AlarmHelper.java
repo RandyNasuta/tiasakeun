@@ -19,10 +19,12 @@ public class AlarmHelper {
     private static final String TAG = "AlarmHelper";
 
     public static void setAlarmForSubActivity(Context context, long subActivityId, String title, String dateStr, String timeStr) {
+        Log.i(TAG, "setAlarmForSubActivity: dateStr: " + dateStr + " | timeStr: " + timeStr + " | subActivityId: " + subActivityId + " | title: " + title);
         if (dateStr == null || timeStr == null) return;
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
+        Log.i(TAG, "setAlarmForSubActivity: versi android: " + Build.VERSION.SDK_INT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
                 Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
